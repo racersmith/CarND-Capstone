@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import tf
 from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
 from styx_msgs.msg import Lane, Waypoint
 
@@ -63,7 +64,8 @@ class WaypointUpdater(object):
     def pose_cb(self, msg):
         self.pose = msg
         self.pos = msg.pose.position
-        self.yaw = msg.pose.orientation[2]
+        euler = tf.transformations.euler_from_quaternion(msg.pose.orientation)
+        self.yaw = euler[2]
 
 
     # # Construct final waypoint msg and publish
