@@ -36,16 +36,16 @@ class WaypointUpdater(object):
     def __init__(self):
         rospy.init_node('waypoint_updater')
 
+        # Subscribers
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
         rospy.Subscriber('/current_velocity', TwistStamped, self.velocity_cb)
-
-        # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
         # rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
 
+        # Publishers
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
-        # TODO: Add other member variables you need below
+
         self.base_waypoints = None
         self.base_s = [0]
         self.n_base_waypoints = None
@@ -107,14 +107,16 @@ class WaypointUpdater(object):
         waypoints[waypoint].twist.twist.linear.x = velocity
 
     # Euclidean distance between two points in 3D space
-    def distance(self, a, b):
+    def distance(self, waypoint_1, waypoint_2):
+        a = waypoint_1.pose.pose.position
+        b = waypoint_2.pose.pose.position
         return math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2)
 
     # Cumulative distance between series of waypoints
     def cumulative_distance(self, waypoints, wp1, wp2):
         dist = 0
         for i in range(wp1, wp2+1):
-            dist += self.distance(waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position)
+            dist += self.distance(waypoints[wp1], waypoints[i])
             wp1 = i
         return dist
 
