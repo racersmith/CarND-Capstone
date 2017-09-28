@@ -64,8 +64,15 @@ class WaypointUpdater(object):
     def pose_cb(self, msg):
         self.pose = msg
         self.pos = msg.pose.position
-        euler = tf.transformations.euler_from_quaternion(msg.pose.orientation)
-        self.yaw = 0
+
+        # convert from quaternion to euler
+        quaternion = (
+            msg.pose.orientation.x,
+            msg.pose.orientation.y,
+            msg.pose.orientation.z,
+            msg.pose.orientation.w)
+        euler = tf.transformations.euler_from_quaternion(quaternion)
+        self.yaw = euler[2]
 
 
     # # Construct final waypoint msg and publish
