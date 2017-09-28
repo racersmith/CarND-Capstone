@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import PoseStamped
-from styx_msgs.msg import Lane, Waypoint, TwistStamped
+from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
+from styx_msgs.msg import Lane, Waypoint
+
 
 import math
 
