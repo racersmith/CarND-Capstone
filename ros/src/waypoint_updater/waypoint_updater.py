@@ -62,8 +62,8 @@ class WaypointUpdater(object):
     # Callback method for current pose subscription
     def pose_cb(self, msg):
         self.pose = msg
-        self.pos = msg.pose.pose.position
-        self.yaw = msg.pose.pose.orientation[2]
+        self.pos = msg.pose.position
+        self.yaw = msg.pose.orientation[2]
 
 
     # # Construct final waypoint msg and publish
