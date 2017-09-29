@@ -98,7 +98,8 @@ class WaypointUpdater(object):
         self.base_waypoints = waypoints.waypoints
         self.n_base_waypoints = len(self.base_waypoints)
         for i in range(1, self.n_base_waypoints):
-            dist = self.distance(self.base_waypoints[i-1], self.base_waypoints[i])
+            dist = self.distance(self.base_waypoints[i-1].pose.pose.position,
+                                 self.base_waypoints[i].pose.pose.position)
             self.base_s.append(self.base_s[-1] + dist)
 
     # Callback method for traffic light detection subscription
@@ -127,7 +128,8 @@ class WaypointUpdater(object):
     def cumulative_distance(self, waypoints, wp1, wp2):
         dist = 0
         for i in range(wp1, wp2+1):
-            dist += self.distance(waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position)
+            dist += self.distance(waypoints[wp1].pose.pose.position,
+                                  waypoints[i].pose.pose.position)
             wp1 = i
         return dist
 
@@ -138,10 +140,12 @@ class WaypointUpdater(object):
             if self.base_waypoints is not None and self.pose is not None:
                 # TODO: Implement
                 # find closest waypoint
-                closest = self.distance(self.pos, self.base_waypoints[0].pose.pose.position)
+                closest = self.distance(self.pos,
+                                        self.base_waypoints[0].pose.pose.position)
                 closest_index = 0
                 for i in range(1, len(self.base_waypoints)):
-                    test_distance = self.distance(self.pos, self.base_waypoints[i].pose.pose.position)
+                    test_distance = self.distance(self.pos,
+                                                  self.base_waypoints[i].pose.pose.position)
                     if test_distance < closest:
                         closest = test_distance
                         closest_index = i
