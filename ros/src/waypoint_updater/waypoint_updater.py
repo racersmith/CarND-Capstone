@@ -121,8 +121,8 @@ class WaypointUpdater(object):
 
     # Euclidean distance between two points in 3D space
     def distance(self, waypoint_1, waypoint_2):
-        a = waypoint_1.pose.position
-        b = waypoint_2.pose.position
+        a = waypoint_1.pose.pose.position
+        b = waypoint_2.pose.pose.position
         return math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2)
 
     # Cumulative distance between series of waypoints
