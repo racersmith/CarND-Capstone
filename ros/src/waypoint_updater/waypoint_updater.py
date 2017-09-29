@@ -137,7 +137,7 @@ class WaypointUpdater(object):
     def update_waypoints(self):
         rate = rospy.Rate(10)  # 10hz
         while not rospy.is_shutdown():
-            if self.base_waypoints is not None:
+            if self.base_waypoints is not None and self.pose is not None:
                 # TODO: Implement
                 # find closest waypoint
                 closest = self.distance(self.pos, self.base_waypoints[0].pose.pose.position)
