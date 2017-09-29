@@ -58,6 +58,10 @@ class WaypointUpdater(object):
         self.yaw = None
         self.vel = None
 
+        # Process information and publish next waypoints
+        # Endless loop while ros is running
+        self.update_waypoints()
+
         rospy.spin()
 
     # Callback method for current pose subscription
