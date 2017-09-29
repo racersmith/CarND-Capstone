@@ -102,6 +102,9 @@ class WaypointUpdater(object):
                                  self.base_waypoints[i].pose.pose.position)
             self.base_s.append(self.base_s[-1] + dist)
 
+        rospy.loginfo('%s Base Waypoints Loaded', self.n_base_waypoints)
+        rospy.loginfo('Track Length: %s', max(self.base_s)-min(self.base_s))
+
     # Callback method for traffic light detection subscription
     def traffic_cb(self, msg):
         # At what future waypoint index is a red light?
