@@ -44,9 +44,9 @@ class Controller(object):
 
         linear_error = linear_target - linear_current
         current_time = rospy.get_time()
-        # step_time = current_time - self.last_time
+        step_time = current_time - self.last_time
         self.last_time = current_time
-        step_time = 1./50.
+        # step_time = 1./50.
         throttle_cmd = self.throttle_controller.step(linear_error, step_time)
         brake_cmd = self.brake_controller.step(-linear_error, step_time)
         if brake_cmd == self.brake_deadband:
