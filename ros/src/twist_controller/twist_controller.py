@@ -27,9 +27,9 @@ class Controller(object):
         maximum_braking_torque = (vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
 
         # Initialize PID controllers for throttle, brake and steering
-        self.throttle_controller = PID(kp=0.1, kd=0.0, ki=0.0, mn=0, mx=1)
-        self.brake_controller = PID(kp=0.1, kd=0.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
-        self.steering_controller = YawController(wheel_base, steer_ratio, 0.01, max_lat_accel, max_steer_angle)
+        self.throttle_controller = PID(kp=0.2, kd=0.0, ki=0.0, mn=0, mx=1)
+        self.brake_controller = PID(kp=0.2, kd=0.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
+        self.steering_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
 
         # time_step value
         self.last_time = rospy.get_time()
@@ -44,10 +44,17 @@ class Controller(object):
 
         linear_error = linear_target - linear_current
         current_time = rospy.get_time()
-        step_time = current_time - self.last_time
+        # step_time = current_time - self.last_time
         self.last_time = current_time
+        step_time = 1./50.
         throttle_cmd = self.throttle_controller.step(linear_error, step_time)
-        brake_cmd = self.brake_controller.step(-linear_error, step_time)
+        if throttle_cmd == 0.0:
+            self.throttle_controller.reset()
+            brake_cmd = self.brake_controller.step(-linear_error, step_time)
+            if brake_cmd == 0.0:
+                self.brake_controller.reset()
+        else:
+            brake_cmd = 0.0
         steering_cmd = self.steering_controller.get_steering(linear_current, angular_target, angular_current)
 
         # Return throttle, brake, steer
