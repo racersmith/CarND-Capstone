@@ -25,7 +25,7 @@ class Controller(object):
         # F = m*a
         # T = F*r
         # T = m*a*r
-        maximum_braking_torque = (vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
+        maximum_braking_torque = -(vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
 
         # Initialize PID controllers for throttle, brake and steering
         self.throttle_controller = PID(kp=0.2, kd=0.0, ki=1e-8, mn=0.0, mx=1.0)
