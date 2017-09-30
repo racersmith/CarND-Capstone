@@ -80,7 +80,6 @@ class DBWNode(object):
 
     # Callback method for checking if Drive-By-Wire is enabled or not
     def dbw_enable_cb(self, msg):
-        # At what future waypoint index is a red light?
         self.dbw_enabled = msg
 
     # Callback method for twist commands from waypoint_follower/pure_pursuit

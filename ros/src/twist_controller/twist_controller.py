@@ -28,7 +28,7 @@ class Controller(object):
         maximum_braking_torque = -(vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
 
         # Initialize PID controllers for throttle, brake and steering
-        self.throttle_controller = PID(kp=0.2, kd=0.0, ki=1e-8, mn=0.0, mx=1.0)
+        self.throttle_controller = PID(kp=0.2, kd=0.1, ki=0.0, mn=0.0, mx=1.0)
         self.brake_controller = PID(kp=0.2, kd=0.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
         self.steering_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
 
