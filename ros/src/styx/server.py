@@ -10,7 +10,7 @@ from bridge import Bridge
 from conf import conf
 
 sio = socketio.Server()
-eventlet.monkey_patch()
+# eventlet.monkey_patch()
 app = Flask(__name__)
 msgs = []
 
