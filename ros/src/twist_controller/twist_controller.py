@@ -20,6 +20,7 @@ class Controller(object):
                  max_lat_accel,
                  max_steer_angle):
 
+        self.brake_deadband = brake_deadband
         # Maximum braking torque
         # F = m*a
         # T = F*r
@@ -27,7 +28,7 @@ class Controller(object):
         maximum_braking_torque = (vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
 
         # Initialize PID controllers for throttle, brake and steering
-        self.throttle_controller = PID(kp=0.2, kd=0.0, ki=0.0, mn=0, mx=1)
+        self.throttle_controller = PID(kp=0.2, kd=0.0, ki=1e-8, mn=0.0, mx=1.0)
         self.brake_controller = PID(kp=0.2, kd=0.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
         self.steering_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
 
@@ -49,8 +50,12 @@ class Controller(object):
         step_time = 1./50.
         throttle_cmd = self.throttle_controller.step(linear_error, step_time)
         brake_cmd = self.brake_controller.step(-linear_error, step_time)
+        if brake_cmd == self.brake_deadband:
+            # no need to ride the brakes.
+            brake_cmd = 0.0
+
         steering_cmd = self.steering_controller.get_steering(linear_current, angular_target, angular_current)
 
         # Return throttle, brake, steer
-        # return throttle_cmd, brake_cmd, steering_cmd
-        return 0.5, 0.0, 0.0
+        return throttle_cmd, brake_cmd, steering_cmd
+        # return 0.5, 0.0, 0.0
