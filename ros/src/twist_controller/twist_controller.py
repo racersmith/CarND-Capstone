@@ -32,7 +32,7 @@ class Controller(object):
         self.steering_controller = YawController(wheel_base, steer_ratio, 0.01, max_lat_accel, max_steer_angle)
 
         # time_step value
-        self.last_time = ros.get_time()
+        self.last_time = rospy.get_time()
 
 
     # Determine control commands from target velocities
@@ -43,7 +43,7 @@ class Controller(object):
             self.brake_controller.reset()
 
         linear_error = linear_target - linear_current
-        current_time = ros.get_time()
+        current_time = rospy.get_time()
         step_time = current_time - self.last_time
         self.last_time = current_time
         throttle_cmd = self.throttle_controller.step(linear_error, step_time)
