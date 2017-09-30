@@ -48,14 +48,9 @@ class Controller(object):
         self.last_time = current_time
         step_time = 1./50.
         throttle_cmd = self.throttle_controller.step(linear_error, step_time)
-        if throttle_cmd == 0.0:
-            self.throttle_controller.reset()
-            brake_cmd = self.brake_controller.step(-linear_error, step_time)
-            if brake_cmd == 0.0:
-                self.brake_controller.reset()
-        else:
-            brake_cmd = 0.0
+        brake_cmd = self.brake_controller.step(-linear_error, step_time)
         steering_cmd = self.steering_controller.get_steering(linear_current, angular_target, angular_current)
 
         # Return throttle, brake, steer
-        return throttle_cmd, brake_cmd, steering_cmd
+        # return throttle_cmd, brake_cmd, steering_cmd
+        return 0.1, 0.0, 0.0
