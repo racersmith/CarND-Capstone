@@ -46,6 +46,7 @@ class DBWNode(object):
         max_lat_accel = rospy.get_param('~max_lat_accel', 3.)
         max_steer_angle = rospy.get_param('~max_steer_angle', 8.)
 
+        # Publishers
         self.steer_pub = rospy.Publisher('/vehicle/steering_cmd',
                                          SteeringCmd, queue_size=1)
         self.throttle_pub = rospy.Publisher('/vehicle/throttle_cmd',
@@ -53,25 +54,60 @@ class DBWNode(object):
         self.brake_pub = rospy.Publisher('/vehicle/brake_cmd',
                                          BrakeCmd, queue_size=1)
 
-        # TODO: Create `TwistController` object
-        # self.controller = TwistController(<Arguments you wish to provide>)
+        # Initialize controller with vehicle parameters
+        self.controller = Controller(vehicle_mass,
+                                     fuel_capacity,
+                                     brake_deadband,
+                                     decel_limit,
+                                     accel_limit,
+                                     wheel_radius,
+                                     wheel_base,
+                                     steer_ratio,
+                                     max_lat_accel,
+                                     max_steer_angle)
 
-        # TODO: Subscribe to all the topics you need to
+        # Subscribers
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enable_cb)
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.velocity_cb)
 
+        self.dbw_enabled = False
+        self.target_linear_velocity = 0.0
+        self.target_angular_velocity = 0.0
+        self.current_linear_velocity = 0.0
+        self.current_angular_velocity = 0.0
         self.loop()
 
+    # Callback method for checking if Drive-By-Wire is enabled or not
+    def dbw_enable_cb(self, msg):
+        # At what future waypoint index is a red light?
+        self.dbw_enabled = msg
+
+    # Callback method for twist commands from waypoint_follower/pure_pursuit
+    def twist_cmd_cb(self, msg):
+        # Target linear velocity
+        self.target_linear_velocity = msg.twist.linear.x
+        # Target angular velocity
+        self.target_angular_velocity = msg.twist.angular.z
+
+    # Callback method for getting current linear velocity
+    def velocity_cb(self, msg):
+        self.current_linear_velocity = msg.twist.linear.x
+        self.current_angular_velocity = msg.twist.angular.z
+
+    # Calculate and publish Drive-by-Wire commands
     def loop(self):
-        rate = rospy.Rate(50) # 50Hz
+        rate = rospy.Rate(50)  # 50Hz
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
-            # throttle, brake, steering = self.controller.control(<proposed linear velocity>,
-            #                                                     <proposed angular velocity>,
-            #                                                     <current linear velocity>,
-            #                                                     <dbw status>,
-            #                                                     <any other argument you need>)
-            # if <dbw is enabled>:
-            #   self.publish(throttle, brake, steer)
+            throttle, brake, steering = self.controller.control(self.target_linear_velocity,
+                                                                self.current_linear_velocity,
+                                                                self.target_angular_velocity,
+                                                                self.current_angular_velocity,
+                                                                self.dbw_enabled)
+            if self.dbw_enabled:
+              self.publish(throttle, brake, steering)
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
