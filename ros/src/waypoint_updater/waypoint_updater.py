@@ -46,7 +46,6 @@ class WaypointUpdater(object):
         # Publishers
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
-
         self.base_waypoints = None
         self.base_s = [0]
         self.n_base_waypoints = None
@@ -61,7 +60,6 @@ class WaypointUpdater(object):
         # Process information and publish next waypoints
         # Endless loop while ros is running
         self.update_waypoints()
-
         rospy.spin()
 
     # Callback method for current pose subscription
@@ -77,15 +75,6 @@ class WaypointUpdater(object):
             msg.pose.orientation.w)
         euler = tf.transformations.euler_from_quaternion(quaternion)
         self.yaw = euler[2]
-
-
-    # # Construct final waypoint msg and publish
-    # def pub_waypoints(self, waypoints):
-    #     lane = Lane()
-    #     lane.header.frame_id = '/world'
-    #     lane.header.stamp = rospy.Time.now()
-    #     lane.waypoints = waypoints
-    #     self.final_waypoints_pub.publish(lane)
 
     # Callback method for velocity subscription
     def velocity_cb(self, msg):
@@ -156,8 +145,8 @@ class WaypointUpdater(object):
                 # from heading determine next waypoint
                 closest_point = self.base_waypoints[closest_index].pose.pose.position
                 angle_to_closest = math.atan2(closest_point.y - self.pos.y, closest_point.x - self.pos.x)
-                heading = abs(self.yaw - angle_to_closest)
-                if heading > math.pi / 4:
+                heading_diff = abs(self.yaw - angle_to_closest)
+                if heading_diff > math.pi / 4:
                     closest_index += 1
 
                 # Publish final waypoints
@@ -172,13 +161,6 @@ class WaypointUpdater(object):
                 lane.waypoints = final_waypoints
                 self.final_waypoints_pub.publish(lane)
             rate.sleep()
-
-    # # Publish
-    # def publisher(self):
-    #     rate = rospy.Rate(10)  # 10hz
-    #     while not rospy.is_shutdown():
-    #         self.final_waypoints_pub.publish(self.final_waypoints)
-    #         rate.sleep()
 
 
 if __name__ == '__main__':

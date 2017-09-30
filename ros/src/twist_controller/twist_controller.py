@@ -35,9 +35,8 @@ class Controller(object):
         # time_step value
         self.last_time = rospy.get_time()
 
-
     # Determine control commands from target velocities
-    def control(self, linear_target, linear_current, angular_target, angular_current, dbw_enabled):
+    def control(self, linear_target, linear_current, angular_target, dbw_enabled):
         # if dbw is not enabled don't let PID controllers windup.
         if not dbw_enabled:
             self.throttle_controller.reset()
@@ -54,8 +53,7 @@ class Controller(object):
             # no need to ride the brakes.
             brake_cmd = 0.0
 
-        steering_cmd = self.steering_controller.get_steering(linear_current, angular_target, angular_current)
+        steering_cmd = self.steering_controller.get_steering(linear_target, angular_target, linear_current)
 
         # Return throttle, brake, steer
         return throttle_cmd, brake_cmd, steering_cmd
-        # return 0.5, 0.0, 0.0

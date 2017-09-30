@@ -35,6 +35,7 @@ class DBWNode(object):
     def __init__(self):
         rospy.init_node('dbw_node')
 
+        # Load parameters
         vehicle_mass = rospy.get_param('~vehicle_mass', 1736.35)
         fuel_capacity = rospy.get_param('~fuel_capacity', 13.5)
         brake_deadband = rospy.get_param('~brake_deadband', .1)
@@ -75,7 +76,6 @@ class DBWNode(object):
         self.target_linear_velocity = 0.0
         self.target_angular_velocity = 0.0
         self.current_linear_velocity = 0.0
-        self.current_angular_velocity = 0.0
         self.loop()
 
     # Callback method for checking if Drive-By-Wire is enabled or not
@@ -84,29 +84,27 @@ class DBWNode(object):
 
     # Callback method for twist commands from waypoint_follower/pure_pursuit
     def twist_cmd_cb(self, msg):
-        # Target linear velocity
         self.target_linear_velocity = msg.twist.linear.x
-        # Target angular velocity
         self.target_angular_velocity = msg.twist.angular.z
 
     # Callback method for getting current linear velocity
     def velocity_cb(self, msg):
         self.current_linear_velocity = msg.twist.linear.x
-        self.current_angular_velocity = msg.twist.angular.z
 
     # Calculate and publish Drive-by-Wire commands
     def loop(self):
         rate = rospy.Rate(50)  # 50Hz
         while not rospy.is_shutdown():
-            # TODO: Get predicted throttle, brake, and steering using `twist_controller`
-            # You should only publish the control commands if dbw is enabled
+            # Get predicted control commands
             throttle, brake, steering = self.controller.control(self.target_linear_velocity,
                                                                 self.current_linear_velocity,
                                                                 self.target_angular_velocity,
-                                                                self.current_angular_velocity,
                                                                 self.dbw_enabled)
+
+            # Publish commands only if dbw is enabled
             if self.dbw_enabled:
                 self.publish(throttle, brake, steering)
+
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
