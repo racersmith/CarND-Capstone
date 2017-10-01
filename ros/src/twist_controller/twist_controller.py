@@ -31,12 +31,13 @@ class Controller(object):
         self.throttle_controller = PID(kp=0.2, kd=0.1, ki=0.0, mn=0.0, mx=1.0)
         self.brake_controller = PID(kp=0.2, kd=0.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
         self.steering_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
+        # self.steering_pid = PID(kp=0.1, kd=0.0, ki=0.0, mn=-max_steer_angle, mx=max_steer_angle)
 
         # time_step value
         self.last_time = rospy.get_time()
 
     # Determine control commands from target velocities
-    def control(self, linear_target, linear_current, angular_target, dbw_enabled):
+    def control(self, linear_target, linear_current, angular_target, angular_current, dbw_enabled):
         # if dbw is not enabled don't let PID controllers windup.
         if not dbw_enabled:
             self.throttle_controller.reset()
@@ -46,10 +47,9 @@ class Controller(object):
         current_time = rospy.get_time()
         step_time = current_time - self.last_time
         self.last_time = current_time
-        # step_time = 1./50.
         throttle_cmd = self.throttle_controller.step(linear_error, step_time)
         brake_cmd = self.brake_controller.step(-linear_error, step_time)
-        if brake_cmd == self.brake_deadband:
+        if brake_cmd <= self.brake_deadband:
             # no need to ride the brakes.
             brake_cmd = 0.0
 

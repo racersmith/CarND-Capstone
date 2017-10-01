@@ -76,6 +76,7 @@ class DBWNode(object):
         self.target_linear_velocity = 0.0
         self.target_angular_velocity = 0.0
         self.current_linear_velocity = 0.0
+        self.current_angular_velocity = 0.0
         self.loop()
 
     # Callback method for checking if Drive-By-Wire is enabled or not
@@ -90,6 +91,7 @@ class DBWNode(object):
     # Callback method for getting current linear velocity
     def velocity_cb(self, msg):
         self.current_linear_velocity = msg.twist.linear.x
+        self.current_angular_velocity = msg.twist.angular.z
 
     # Calculate and publish Drive-by-Wire commands
     def loop(self):
@@ -99,12 +101,12 @@ class DBWNode(object):
             throttle, brake, steering = self.controller.control(self.target_linear_velocity,
                                                                 self.current_linear_velocity,
                                                                 self.target_angular_velocity,
+                                                                self.current_angular_velocity,
                                                                 self.dbw_enabled)
 
             # Publish commands only if dbw is enabled
             if self.dbw_enabled:
                 self.publish(throttle, brake, steering)
-                # self.publish(0.3, 0.0, steering)
 
             rate.sleep()
 
