@@ -84,15 +84,16 @@ class WaypointUpdater(object):
     def waypoints_cb(self, waypoints):
         # base_waypoints is only published once on startup.
         # We need to capture and store this info for later.
-        self.base_waypoints = waypoints.waypoints
-        self.n_base_waypoints = len(self.base_waypoints)
-        for i in range(1, self.n_base_waypoints):
-            dist = self.distance(self.base_waypoints[i-1].pose.pose.position,
-                                 self.base_waypoints[i].pose.pose.position)
-            self.base_s.append(self.base_s[-1] + dist)
+        if self.base_waypoints is None:
+            self.base_waypoints = waypoints.waypoints
+            self.n_base_waypoints = len(self.base_waypoints)
+            for i in range(1, self.n_base_waypoints):
+                dist = self.distance(self.base_waypoints[i-1].pose.pose.position,
+                                     self.base_waypoints[i].pose.pose.position)
+                self.base_s.append(self.base_s[-1] + dist)
 
-        rospy.loginfo('%s Base Waypoints Loaded', self.n_base_waypoints)
-        rospy.loginfo('Track Length: %s', max(self.base_s)-min(self.base_s))
+            rospy.loginfo('%s Base Waypoints Loaded', self.n_base_waypoints)
+            rospy.loginfo('Track Length: %s', max(self.base_s)-min(self.base_s))
 
     # Callback method for traffic light detection subscription
     def traffic_cb(self, msg):
@@ -127,7 +128,7 @@ class WaypointUpdater(object):
 
     # Update waypoints and publish
     def update_waypoints(self):
-        rate = rospy.Rate(1)  # 10hz
+        rate = rospy.Rate(4)  # 10hz
         while not rospy.is_shutdown():
             if self.base_waypoints is not None and self.pose is not None:
                 # find closest waypoint
