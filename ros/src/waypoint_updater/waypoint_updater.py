@@ -21,7 +21,7 @@ current status in `/vehicle/traffic_lights` message. You can use this message to
 as well as to verify your TL classifier.
 '''
 
-LOOKAHEAD_WPS = 50 # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 
 # Acceleration limit to determine if the car can stop for the light
 # This serves as a quick calculation and does not use JMT.
@@ -56,6 +56,8 @@ class WaypointUpdater(object):
         self.pos = None
         self.yaw = None
         self.vel = None
+
+        self.last_waypoint_index = None
 
         # Process information and publish next waypoints
         # Endless loop while ros is running
@@ -126,32 +128,75 @@ class WaypointUpdater(object):
             wp1 = i
         return dist
 
+    # Search for the closest base waypoint to the current pose
+    # Start search at
+    def find_closest_base_waypoint(self, starting_index, n_points):
+        closest_index = starting_index%self.n_base_waypoints
+        closest = self.distance(self.pos,
+                                self.base_waypoints[closest_index].pose.pose.position)
+        for i in range(1, n_points):
+            test_index = (starting_index+i)%self.n_base_waypoints
+            test_distance = self.distance(self.pos,
+                                          self.base_waypoints[test_index].pose.pose.position)
+            if test_distance < closest:
+                closest = test_distance
+                closest_index = test_index
+
+            # Recursively search if the closest was found at an endpoint
+            if n_points < self.n_base_waypoints:
+                # closest was the first point
+                if closest_index == starting_index:
+                    starting_index -= (n_points - 1 - 1)
+                    while starting_index < 0:
+                        starting_index += self.n_base_waypoints
+                    print("Found at start")
+                    closest_index = self.find_closest_base_waypoint(starting_index, n_points)
+
+                # closest was last point
+                elif closest_index == starting_index + n_points - 1:
+                    starting_index += (n_points - 1 - 1)
+
+                    # I modulo at the start of the function... no need for this
+                    # starting_index = starting_index % self.n_base_waypoints
+
+                    print("Found at end")
+                    closest_index = self.find_closest_base_waypoint(starting_index, n_points)
+
+        return closest_index
+
+    # Determine if the closest waypoint is in front or behind pose
+    # Output the next waypoint in front of pose
+    def find_next_base_waypoint(self, closest_index):
+        # from heading determine next waypoint
+        closest_point = self.base_waypoints[closest_index].pose.pose.position
+        angle_to_closest = math.atan2(closest_point.y - self.pos.y, closest_point.x - self.pos.x)
+        heading_diff = abs(self.yaw - angle_to_closest)
+        if heading_diff > math.pi / 4:
+            closest_index += 1
+        return closest_index
+
     # Update waypoints and publish
     def update_waypoints(self):
         rate = rospy.Rate(1)  # 10hz
         while not rospy.is_shutdown():
             if self.base_waypoints is not None and self.pose is not None:
-                # find closest waypoint
-                closest = self.distance(self.pos,
-                                        self.base_waypoints[0].pose.pose.position)
-                closest_index = 0
-                for i in range(1, len(self.base_waypoints)):
-                    test_distance = self.distance(self.pos,
-                                                  self.base_waypoints[i].pose.pose.position)
-                    if test_distance < closest:
-                        closest = test_distance
-                        closest_index = i
+                search_index = 0
+                search_length = self.n_base_waypoints
 
-                # from heading determine next waypoint
-                closest_point = self.base_waypoints[closest_index].pose.pose.position
-                angle_to_closest = math.atan2(closest_point.y - self.pos.y, closest_point.x - self.pos.x)
-                heading_diff = abs(self.yaw - angle_to_closest)
-                if heading_diff > math.pi / 4:
-                    closest_index += 1
+                # If we have some idea where we are then do a more focused search
+                if self.last_waypoint_index is not None:
+                    search_index = self.last_waypoint_index - LOOKAHEAD_WPS
+                    while search_index < 0:
+                        search_index += self.n_base_waypoints
+                    search_length = 2*LOOKAHEAD_WPS
+
+                closest_waypoint = self.find_closest_base_waypoint(search_index, search_length)
+                next_waypoint = self.find_next_base_waypoint(closest_waypoint)
+
 
                 # Publish final waypoints
                 final_waypoints = []
-                for i in range(closest_index, closest_index + LOOKAHEAD_WPS):
+                for i in range(next_waypoint, next_waypoint + LOOKAHEAD_WPS):
                     final_waypoints.append(self.base_waypoints[i % self.n_base_waypoints])
 
                 # Construct and publish message
@@ -160,6 +205,9 @@ class WaypointUpdater(object):
                 lane.header.stamp = rospy.Time.now()
                 lane.waypoints = final_waypoints
                 self.final_waypoints_pub.publish(lane)
+                self.last_waypoint_index = next_waypoint
+
+
             rate.sleep()
 
 
