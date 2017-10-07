@@ -123,6 +123,7 @@ class TLDetector(object):
 
         # get transform between pose of camera and world frame
         trans = None
+        rot = None
         try:
             now = rospy.Time.now()
             self.listener.waitForTransform("/base_link",
@@ -133,10 +134,16 @@ class TLDetector(object):
         except (tf.Exception, tf.LookupException, tf.ConnectivityException):
             rospy.logerr("Failed to find camera to map transform")
 
-        #TODO Use tranform and rotation to calculate 2D position of light in image
+        #TODO Use transform and rotation to calculate 2D position of light in image
 
         x = 0
         y = 0
+
+        if trans is not None:
+            euler = tf.transformations.euler_from_quaternion(rot)
+            camera_matrix = [[fx, 0, image_width/2],[0, fy, image_height/2],[0,0,1]]
+            x, y = cv2.projectPoints([point_in_world.x, point_in_world.y], euler, trans, camera_matrix)
+
 
         return (x, y)
 
