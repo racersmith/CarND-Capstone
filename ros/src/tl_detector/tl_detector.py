@@ -13,6 +13,8 @@ import yaml
 
 STATE_COUNT_THRESHOLD = 3
 
+Point = namedtuple('Point', ['x', 'y'])
+
 class TLDetector(object):
     def __init__(self):
         rospy.init_node('tl_detector')
@@ -54,6 +56,7 @@ class TLDetector(object):
 
         self.car_index = None
         self.next_waypoints = None
+        self.stop_map = []
 
         rospy.spin()
 
@@ -61,7 +64,18 @@ class TLDetector(object):
         self.pose = msg
 
     def waypoints_cb(self, waypoints):
-        self.waypoints = waypoints
+        if self.waypoints is None:
+            self.waypoints = [point.pose.pose.postion for point in waypoints]
+            stop_lines = [Point(x, y) for x, y in self.config['stop_line_positions']]
+            stop_index = []
+            for point in stop_lines:
+                stop_index.append(self.get_closest_waypoint(point))
+
+            # Generate a map indicating the waypoint of the next stop line
+            stop_index = sorted(stop_index, reverse=True)
+            self.stop_map = [stop_index[-1] for _ in range(len(self.waypoints))]
+            for index in stop_index:
+                self.stop_map[:index] = [index for _ in range(index)]
 
     def car_index_cb(self, msg):
         self.car_index = msg
@@ -102,7 +116,7 @@ class TLDetector(object):
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
 
-    def get_closest_waypoint(self, pose):
+    def get_closest_waypoint(self, pos):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem
         Args:
@@ -113,11 +127,10 @@ class TLDetector(object):
 
         """
         #TODO implement
-        pos = pose.pose.position
         closest_index = None
         closest_se = None
         for i in range(len(self.waypoints)):
-            error = self.squared_error(pos, self.waypoints[0].pose.pose.position)
+            error = self.squared_error(pos, self.waypoints[0])
             if closest_se is None or error < closest_se:
                 closest_se = error
                 closest_index = i
