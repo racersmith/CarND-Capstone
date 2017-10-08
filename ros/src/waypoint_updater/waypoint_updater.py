@@ -45,6 +45,7 @@ class WaypointUpdater(object):
 
         # Publishers
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
+        self.car_index_pub = rospy.Publisher('car_index', Int32, queue_size=1)
 
         self.base_waypoints = None
         self.base_s = [0]

@@ -33,7 +33,10 @@ class TLDetector(object):
         rely on the position of the light and the camera image to predict it.
         '''
         sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
+        sub4 = rospy.Subscriber('/car_index', Int32, self.car_index_cb)
+        sub5 = rospy.Subscriber('/final_waypoints', Lane, self.final_waypoints_cb)
         sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
+
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
@@ -49,6 +52,9 @@ class TLDetector(object):
         self.last_wp = -1
         self.state_count = 0
 
+        self.car_index = None
+        self.next_waypoints = None
+
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -56,6 +62,12 @@ class TLDetector(object):
 
     def waypoints_cb(self, waypoints):
         self.waypoints = waypoints
+
+    def car_index_cb(self, msg):
+        self.car_index = msg
+
+    def final_waypoints_cb(self, msg):
+        self.next_waypoints = msg
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
@@ -101,8 +113,19 @@ class TLDetector(object):
 
         """
         #TODO implement
-        return 0
+        pos = pose.pose.position
+        closest_index = None
+        closest_se = None
+        for i in range(len(self.waypoints)):
+            error = self.squared_error(pos, self.waypoints[0].pose.pose.position)
+            if closest_se is None or error < closest_se:
+                closest_se = error
+                closest_index = i
 
+        return closest_index
+
+    def squared_error(self, a, b):
+        return (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2
 
     def project_to_image_plane(self, point_in_world):
         """Project point from 3D world coordinates to 2D camera image location
