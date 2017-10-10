@@ -10,6 +10,7 @@ from light_classification.tl_classifier import TLClassifier
 import tf
 import cv2
 import yaml
+import math
 
 STATE_COUNT_THRESHOLD = 3
 
@@ -57,6 +58,7 @@ class TLDetector(object):
         self.car_index = None
         self.next_waypoints = None
         self.stop_map = []
+        self.stop_index = {}
 
         rospy.spin()
 
@@ -67,14 +69,14 @@ class TLDetector(object):
         if self.waypoints is None:
             self.waypoints = [point.pose.pose.postion for point in waypoints]
             stop_lines = [Point(x, y) for x, y in self.config['stop_line_positions']]
-            stop_index = []
-            for point in stop_lines:
-                stop_index.append(self.get_closest_waypoint(point))
+            for i, point in enumerate(stop_lines):
+                closest_index = self.get_closest_waypoint(point)
+                self.stop_index[closest_index] = i
 
             # Generate a map indicating the waypoint of the next stop line
-            stop_index = sorted(stop_index, reverse=True)
-            self.stop_map = [stop_index[-1] for _ in range(len(self.waypoints))]
-            for index in stop_index:
+            sorted_stop_index = sorted(self.stop_index.keys(), reverse=True)
+            self.stop_map = [sorted_stop_index[-1] for _ in range(len(self.waypoints))]
+            for index in sorted_stop_index:
                 self.stop_map[:index] = [index for _ in range(index)]
 
     def car_index_cb(self, msg):
@@ -85,6 +87,14 @@ class TLDetector(object):
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
+        # Find next light
+        # Determine distance
+        # Set stop waypoint
+        for i, light in enumerate(msg.lights):
+            light_point = Point(light[0], light[1])
+            dist = math.sqrt(self.squared_error_2d(self.pose.pose.position, light_point))
+            state = light[4]
+            rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
 
     def image_cb(self, msg):
         """Identifies red lights in the incoming camera image and publishes the index
@@ -137,8 +147,8 @@ class TLDetector(object):
 
         return closest_index
 
-    def squared_error(self, a, b):
-        return (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2
+    def squared_error_2d(self, a, b):
+        return (a.x - b.x)**2 + (a.y - b.y)**2
 
     def project_to_image_plane(self, point_in_world):
         """Project point from 3D world coordinates to 2D camera image location
