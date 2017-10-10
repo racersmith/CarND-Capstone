@@ -66,7 +66,7 @@ class TLDetector(object):
     def waypoints_cb(self, waypoints):
         if self.waypoints is None:
             # self.waypoints = [pose.pose.postion for pose in waypoints.pose]
-            self.waypoints = waypoints
+            self.waypoints = waypoints.waypoints
             # stop_lines = [ for x, y in self.config['stop_line_positions']]
             # for i, point in enumerate(stop_lines):
             #     closest_index = self.get_closest_waypoint(point)
