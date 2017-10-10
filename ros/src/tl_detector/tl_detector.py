@@ -14,8 +14,6 @@ import math
 
 STATE_COUNT_THRESHOLD = 3
 
-Point = namedtuple('Point', ['x', 'y'])
-
 class TLDetector(object):
     def __init__(self):
         rospy.init_node('tl_detector')
@@ -68,16 +66,16 @@ class TLDetector(object):
     def waypoints_cb(self, waypoints):
         if self.waypoints is None:
             self.waypoints = [point.pose.pose.postion for point in waypoints]
-            stop_lines = [Point(x, y) for x, y in self.config['stop_line_positions']]
-            for i, point in enumerate(stop_lines):
-                closest_index = self.get_closest_waypoint(point)
-                self.stop_index[closest_index] = i
-
-            # Generate a map indicating the waypoint of the next stop line
-            sorted_stop_index = sorted(self.stop_index.keys(), reverse=True)
-            self.stop_map = [sorted_stop_index[-1] for _ in range(len(self.waypoints))]
-            for index in sorted_stop_index:
-                self.stop_map[:index] = [index for _ in range(index)]
+            # stop_lines = [ for x, y in self.config['stop_line_positions']]
+            # for i, point in enumerate(stop_lines):
+            #     closest_index = self.get_closest_waypoint(point)
+            #     self.stop_index[closest_index] = i
+            #
+            # # Generate a map indicating the waypoint of the next stop line
+            # sorted_stop_index = sorted(self.stop_index.keys(), reverse=True)
+            # self.stop_map = [sorted_stop_index[-1] for _ in range(len(self.waypoints))]
+            # for index in sorted_stop_index:
+            #     self.stop_map[:index] = [index for _ in range(index)]
 
     def car_index_cb(self, msg):
         self.car_index = msg
@@ -91,8 +89,8 @@ class TLDetector(object):
         # Determine distance
         # Set stop waypoint
         for i, light in enumerate(msg.lights):
-            light_point = Point(light[0], light[1])
-            dist = math.sqrt(self.squared_error_2d(self.pose.pose.position, light_point))
+            dist = math.sqrt((self.pose.pose.position.x - self.lights[0])**2 +
+                             (self.pose.pose.position.y - self.lights[1])**2)
             state = light[4]
             rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
 
