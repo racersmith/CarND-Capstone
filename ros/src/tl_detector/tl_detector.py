@@ -191,7 +191,7 @@ class TLDetector(object):
                                       [0, 0, 1]])
             dist_coef = np.zeros(4)
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
-            rospy.loginfo(img_points[0], img_points[1])
+            rospy.loginfo(img_points[0][0], img_points[0][1])
 
         return (x, y)
 
