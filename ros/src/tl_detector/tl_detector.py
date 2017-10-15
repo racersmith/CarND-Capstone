@@ -234,11 +234,11 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        light = None
 
         # List of positions that correspond to the line to stop in front of for a given intersection
         stop_line_positions = self.config['stop_line_positions']
         next_stop_index = -1
+        traffic_index = None
         if(self.car_index is not None and self.stop_map is not None):
             # TODO find the closest visible traffic light (if one exists)
             # Next Light
@@ -249,11 +249,10 @@ class TLDetector(object):
                     next_stop_index = stop_index
                     traffic_index = i
 
-        if self.lights is not None:
+        if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]
             state = self.get_light_state(light)
-            light_wp = None
-            return light_wp, state
+            return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
 
 if __name__ == '__main__':
