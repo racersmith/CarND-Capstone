@@ -185,7 +185,8 @@ class TLDetector(object):
         if trans is not None:
             euler = tf.transformations.euler_from_quaternion(rot)
             camera_matrix = [[fx, 0, image_width/2],[0, fy, image_height/2],[0,0,1]]
-            x, y = cv2.projectPoints([point_in_world.x, point_in_world.y], euler, trans, camera_matrix)
+            dist_coef = [0, 0, 0, 0]
+            x, y = cv2.projectPoints([point_in_world.x, point_in_world.y], euler, trans, camera_matrix, dist_coef)
 
 
         return (x, y)
