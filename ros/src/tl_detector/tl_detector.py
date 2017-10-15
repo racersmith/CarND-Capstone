@@ -55,14 +55,14 @@ class TLDetector(object):
 
         self.car_index = None
         self.next_waypoints = None
-        self.stop_map = []
+        self.stop_map = None
 
         rospy.spin()
 
     def pose_cb(self, msg):
         self.pose = msg
 
-    class Point():
+    class Point:
         def __init__(self, x, y):
             self.x = x
             self.y = y
@@ -72,6 +72,7 @@ class TLDetector(object):
             # self.waypoints = [pose.pose.postion for pose in waypoints.pose]
             self.base_waypoints = waypoints.waypoints
 
+            self.stop_map = []
             for x, y in self.config['stop_line_positions']:
                 stop_point = self.Point(x, y)
                 self.stop_map.append(self.get_closest_waypoint(stop_point))
@@ -237,16 +238,23 @@ class TLDetector(object):
 
         # List of positions that correspond to the line to stop in front of for a given intersection
         stop_line_positions = self.config['stop_line_positions']
-        if(self.car_index is not None):
+        next_stop_index = -1
+        if(self.car_index is not None and self.stop_map is not None):
             # TODO find the closest visible traffic light (if one exists)
-            pass
+            # Next Light
+            next_stop_index = self.stop_map[0]
+            traffic_index = 0
+            for i, stop_index in enumerate(self.stop_map):
+                if self.car_index > next_stop_index and stop_index >= self.car_index:
+                    next_stop_index = stop_index
+                    traffic_index = i
 
-        if light is not None:
+        if self.lights is not None:
+            light = self.lights[traffic_index]
             state = self.get_light_state(light)
             light_wp = None
             return light_wp, state
-        self.waypoints = None
-        return -1, TrafficLight.UNKNOWN
+        return next_stop_index, TrafficLight.UNKNOWN
 
 if __name__ == '__main__':
     try:
