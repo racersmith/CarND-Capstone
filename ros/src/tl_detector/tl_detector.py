@@ -238,7 +238,7 @@ class TLDetector(object):
                     next_stop_index = stop_index
                     traffic_index = i
 
-            dist = math.sqrt(self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose))
+            dist = math.sqrt(self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position))
             rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index, dist, self.lights[traffic_index].state))
 
         if self.lights is not None and traffic_index is not None:
