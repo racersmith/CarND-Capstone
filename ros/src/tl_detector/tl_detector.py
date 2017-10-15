@@ -72,7 +72,7 @@ class TLDetector(object):
             # self.waypoints = [pose.pose.postion for pose in waypoints.pose]
             self.base_waypoints = waypoints.waypoints
 
-            for x, y in self.config.stop_line_positions:
+            for x, y in self.config['stop_line_positions'].values():
                 stop_point = self.Point(x, y)
                 self.stop_map.append(self.get_closest_waypoint(stop_point))
                 rospy.loginfo("Stop Index: {}".format(self.stop_map[-1]))
