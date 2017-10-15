@@ -11,6 +11,7 @@ import tf
 import cv2
 import yaml
 import math
+import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
 
@@ -183,11 +184,14 @@ class TLDetector(object):
         y = 0
 
         if trans is not None:
+            obj_points = np.array([[point_in_world.x, point_in_world.y, point_in_world.z]])
             euler = tf.transformations.euler_from_quaternion(rot)
-            camera_matrix = [[fx, 0, image_width/2],[0, fy, image_height/2],[0,0,1]]
-            dist_coef = [0, 0, 0, 0]
-            x, y = cv2.projectPoints([point_in_world.x, point_in_world.y], euler, trans, camera_matrix, dist_coef)
-
+            camera_matrix = np.array([[fx, 0, image_width/2],
+                                      [0, fy, image_height/2],
+                                      [0, 0, 1]])
+            dist_coef = np.zeros(4)
+            img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
+            rospy.loginfo(img_points[0], img_points[1])
 
         return (x, y)
 
