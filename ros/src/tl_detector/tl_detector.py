@@ -19,7 +19,7 @@ class TLDetector(object):
         rospy.init_node('tl_detector')
 
         self.pose = None
-        self.waypoints = None
+        self.base_waypoints = None
         self.camera_image = None
         self.lights = []
 
@@ -56,17 +56,27 @@ class TLDetector(object):
         self.car_index = None
         self.next_waypoints = None
         self.stop_map = []
-        self.stop_index = {}
 
         rospy.spin()
 
     def pose_cb(self, msg):
         self.pose = msg
 
+    class Point():
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
     def waypoints_cb(self, waypoints):
-        if self.waypoints is None:
+        if self.base_waypoints is None:
             # self.waypoints = [pose.pose.postion for pose in waypoints.pose]
-            self.waypoints = waypoints.waypoints
+            self.base_waypoints = waypoints.waypoints
+
+            for x, y in self.config.stop_line_positions:
+                stop_point = self.Point(x, y)
+                self.stop_map.append(self.get_closest_waypoint(stop_point))
+                rospy.loginfo("Stop Index: {}".format(self.stop_map[-1]))
+
             # stop_lines = [ for x, y in self.config['stop_line_positions']]
             # for i, point in enumerate(stop_lines):
             #     closest_index = self.get_closest_waypoint(point)
@@ -137,8 +147,8 @@ class TLDetector(object):
         #TODO implement
         closest_index = None
         closest_se = None
-        for i in range(len(self.waypoints)):
-            error = self.squared_error_2d(pos, self.waypoints[0])
+        for i, waypoint in enumerate(self.base_waypoints):
+            error = self.squared_error_2d(pos, waypoint)
             if closest_se is None or error < closest_se:
                 closest_se = error
                 closest_index = i
@@ -208,7 +218,7 @@ class TLDetector(object):
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
         x, y = self.project_to_image_plane(light.pose.pose.position)
-
+        rospy.loginfo("x: {:4.2f}, y: {:4.2f}".format(x, y))
         #TODO use light location to zoom in on traffic light in image
 
         #Get classification
@@ -227,13 +237,13 @@ class TLDetector(object):
 
         # List of positions that correspond to the line to stop in front of for a given intersection
         stop_line_positions = self.config['stop_line_positions']
-        if(self.pose):
-            car_position = self.get_closest_waypoint(self.pose.pose)
+        if(self.car_index is not None):
+            # TODO find the closest visible traffic light (if one exists)
+            pass
 
-        #TODO find the closest visible traffic light (if one exists)
-
-        if light:
+        if light is not None:
             state = self.get_light_state(light)
+            light_wp = None
             return light_wp, state
         self.waypoints = None
         return -1, TrafficLight.UNKNOWN
