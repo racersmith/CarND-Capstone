@@ -22,6 +22,7 @@ class TLDetector(object):
         self.base_waypoints = None
         self.camera_image = None
         self.lights = []
+        self.has_image = False
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -69,7 +70,6 @@ class TLDetector(object):
 
     def waypoints_cb(self, waypoints):
         if self.base_waypoints is None:
-            # self.waypoints = [pose.pose.postion for pose in waypoints.pose]
             self.base_waypoints = waypoints.waypoints
 
             self.stop_map = []
@@ -77,17 +77,6 @@ class TLDetector(object):
                 stop_point = self.Point(x, y)
                 self.stop_map.append(self.get_closest_waypoint(stop_point))
                 rospy.loginfo("Stop Index: {}".format(self.stop_map[-1]))
-
-            # stop_lines = [ for x, y in self.config['stop_line_positions']]
-            # for i, point in enumerate(stop_lines):
-            #     closest_index = self.get_closest_waypoint(point)
-            #     self.stop_index[closest_index] = i
-            #
-            # # Generate a map indicating the waypoint of the next stop line
-            # sorted_stop_index = sorted(self.stop_index.keys(), reverse=True)
-            # self.stop_map = [sorted_stop_index[-1] for _ in range(len(self.waypoints))]
-            # for index in sorted_stop_index:
-            #     self.stop_map[:index] = [index for _ in range(index)]
 
     def car_index_cb(self, msg):
         self.car_index = msg
@@ -103,7 +92,7 @@ class TLDetector(object):
         for i, light in enumerate(msg.lights):
             dist = math.sqrt(self.squared_error_2d(self.pose.pose.position, light.pose.pose.position))
             state = light.state
-            rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
+            # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
 
     def image_cb(self, msg):
         """Identifies red lights in the incoming camera image and publishes the index
@@ -145,7 +134,6 @@ class TLDetector(object):
             int: index of the closest waypoint in self.waypoints
 
         """
-        #TODO implement
         closest_index = None
         closest_se = None
         for i, waypoint in enumerate(self.base_waypoints):
@@ -248,6 +236,9 @@ class TLDetector(object):
                 if self.car_index > next_stop_index and stop_index >= self.car_index:
                     next_stop_index = stop_index
                     traffic_index = i
+
+            dist = math.sqrt(self.squared_error_2d(self.lights[traffic_index].pose.pose.position), self.pose)
+            rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index, dist, self.lights[traffic_index].state))
 
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]
