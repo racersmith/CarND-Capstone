@@ -105,7 +105,6 @@ class TLDetector(object):
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
-        rospy.loginfo("image cb")
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -228,7 +227,7 @@ class TLDetector(object):
         stop_line_positions = self.config['stop_line_positions']
         next_stop_index = -1
         traffic_index = None
-        if(self.car_index is not None and self.stop_map is not None):
+        if self.car_index is not None and self.stop_map is not None:
             # TODO find the closest visible traffic light (if one exists)
             # Next Light
             next_stop_index = self.stop_map[0]
