@@ -80,7 +80,7 @@ class TLDetector(object):
                 rospy.loginfo("Stop Index: {}".format(self.stop_map[-1]))
 
     def car_index_cb(self, msg):
-        self.car_index = msg
+        self.car_index = msg.data
 
     def final_waypoints_cb(self, msg):
         self.next_waypoints = msg
