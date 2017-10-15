@@ -80,6 +80,7 @@ class WaypointUpdater(object):
         euler = tf.transformations.euler_from_quaternion(quaternion)
         self.yaw = euler[2]
 
+
     # Callback method for velocity subscription
     def velocity_cb(self, msg):
         self.vel = msg.twist.linear.x
@@ -193,6 +194,7 @@ class WaypointUpdater(object):
                     search_length = 2*LOOKAHEAD_WPS
 
                 closest_waypoint = self.find_closest_base_waypoint(search_index, search_length)
+                self.car_index_pub.publish(closest_waypoint)
                 next_waypoint = self.find_next_base_waypoint(closest_waypoint)
 
 
