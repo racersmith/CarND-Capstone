@@ -184,7 +184,8 @@ class TLDetector(object):
         y = 0
 
         if trans is not None:
-            obj_points = np.array([[point_in_world.x, point_in_world.y, point_in_world.z]])
+            # obj_points = np.array([[point_in_world.x, point_in_world.y, point_in_world.z]])
+            obj_points = np.float32([[point_in_world.x, point_in_world.y, point_in_world.z]]).reshape(-1, 3)
             euler = tf.transformations.euler_from_quaternion(rot)
             camera_matrix = np.array([[fx, 0, image_width/2],
                                       [0, fy, image_height/2],
@@ -192,6 +193,7 @@ class TLDetector(object):
             dist_coef = np.zeros(4)
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
             rospy.loginfo(img_points[0][0], img_points[0][1])
+            print(img_points)
 
         return (x, y)
 
