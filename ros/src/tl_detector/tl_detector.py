@@ -148,7 +148,7 @@ class TLDetector(object):
         closest_index = None
         closest_se = None
         for i, waypoint in enumerate(self.base_waypoints):
-            error = self.squared_error_2d(pos, waypoint)
+            error = self.squared_error_2d(pos, waypoint.pose.pose.position)
             if closest_se is None or error < closest_se:
                 closest_se = error
                 closest_index = i
