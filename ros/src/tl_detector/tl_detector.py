@@ -227,7 +227,7 @@ class TLDetector(object):
         stop_line_positions = self.config['stop_line_positions']
         next_stop_index = -1
         traffic_index = None
-        rospy.loginfo("process traffic lights")
+        rospy.loginfo("process traffic lights: {} {}".format(self.car_index is not None, self.stop_map is not None))
         if self.car_index is not None and self.stop_map is not None:
             rospy.loginfo("finding closest")
             # TODO find the closest visible traffic light (if one exists)
