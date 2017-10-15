@@ -184,7 +184,6 @@ class TLDetector(object):
         y = 0
 
         if trans is not None:
-            # obj_points = np.array([[point_in_world.x, point_in_world.y, point_in_world.z]])
             obj_points = np.float32([[point_in_world.x, point_in_world.y, point_in_world.z]]).reshape(-1, 3)
             euler = tf.transformations.euler_from_quaternion(rot)
             camera_matrix = np.array([[fx, 0, image_width/2],
@@ -192,7 +191,8 @@ class TLDetector(object):
                                       [0, 0, 1]])
             dist_coef = np.zeros(4)
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
-            # rospy.loginfo(img_points[0, 0], img_points[0, 1])
+            x = img_points[0][0][0]
+            y = img_points[0][0][1]
             rospy.loginfo(img_points)
 
         return (x, y)
@@ -234,19 +234,24 @@ class TLDetector(object):
         stop_line_positions = self.config['stop_line_positions']
         next_stop_index = -1
         traffic_index = None
-        # rospy.loginfo("process traffic lights: {} {}".format(self.car_index is not None, self.stop_map is not None))
         if self.car_index is not None and self.stop_map is not None:
             # TODO find the closest visible traffic light (if one exists)
             # Next Light
             next_stop_index = self.stop_map[0]
             traffic_index = 0
             for i, stop_index in enumerate(self.stop_map):
-                if self.car_index > next_stop_index and stop_index >= self.car_index:
+                if stop_index >= self.car_index > next_stop_index:
                     next_stop_index = stop_index
                     traffic_index = i
 
             dist = math.sqrt(self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position))
-            rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index, dist, self.lights[traffic_index].state))
+            # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index,
+            #                                                                 dist,
+            #                                                                 self.lights[traffic_index].state))
+            rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
+                                                                     traffic_index,
+                                                                     next_stop_index,
+                                                                     dist))
 
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]
