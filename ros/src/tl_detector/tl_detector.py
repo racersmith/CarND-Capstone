@@ -162,8 +162,8 @@ class TLDetector(object):
 
         fx = self.config['camera_info']['focal_length_x']
         fy = self.config['camera_info']['focal_length_y']
-        fx = 755
-        fy = 255
+        fx = 755.0
+        fy = 255.0
         image_width = self.config['camera_info']['image_width']
         image_height = self.config['camera_info']['image_height']
 
