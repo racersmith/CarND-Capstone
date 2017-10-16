@@ -213,8 +213,12 @@ class TLDetector(object):
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
-        x, y = self.project_to_image_plane(light.pose.pose.position)
-        rospy.loginfo("x: {:4.2f}, y: {:4.2f}".format(x, y))
+        obj_pos = light.pose.pose.position
+        x, y = self.project_to_image_plane(obj_pos)
+        rospy.loginfo("x: {:4.2f}, y: {:4.2f}, z {:4.2f} -> x: {:4.2f}, y: {:4.2f}".format(obj_pos.x,
+                                                                                           obj_pos.y,
+                                                                                           obj_pos.z,
+                                                                                           x, y))
         #TODO use light location to zoom in on traffic light in image
 
         #Get classification
