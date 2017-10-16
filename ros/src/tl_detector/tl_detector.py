@@ -148,7 +148,7 @@ class TLDetector(object):
     def squared_error_2d(self, a, b):
         return (a.x - b.x)**2 + (a.y - b.y)**2
 
-    def project_to_image_plane(self, point_in_world):
+    def project_to_image_plane(self, light):
         """Project point from 3D world coordinates to 2D camera image location
 
         Args:
@@ -159,6 +159,7 @@ class TLDetector(object):
             y (int): y coordinate of target point in image
 
         """
+        obj_pos = light.pose.pose.position
 
         fx = self.config['camera_info']['focal_length_x']
         fy = self.config['camera_info']['focal_length_y']
@@ -186,15 +187,21 @@ class TLDetector(object):
         y = 0
 
         if trans is not None:
-            obj_points = np.float32([[point_in_world.z, point_in_world.y, point_in_world.x]]).reshape(-1, 3)
+            obj_points = np.float32([[obj_pos.z, obj_pos.y, obj_pos.x]]).reshape(-1, 3)
             euler = tf.transformations.euler_from_quaternion(rot)
             camera_matrix = np.array([[fx, 0, image_width/2],
                                       [0, fy, image_height/2],
                                       [0, 0, 1]])
             dist_coef = np.zeros(4)
+
+            # Map between car coord to cv2
+            trans = [trans[1], trans[2], trans[0]]
+            euler = [euler[1], euler[2], euler[0]]
+
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
             x = img_points[0][0][0]
             y = img_points[0][0][1]
+
         return (x, y)
 
     def get_light_state(self, light):
@@ -214,7 +221,7 @@ class TLDetector(object):
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
         obj_pos = light.pose.pose.position
-        x, y = self.project_to_image_plane(obj_pos)
+        x, y = self.project_to_image_plane(light)
         rospy.loginfo("x: {:4.2f}, y: {:4.2f}, z {:4.2f} -> x: {:4.2f}, y: {:4.2f}".format(obj_pos.x,
                                                                                            obj_pos.y,
                                                                                            obj_pos.z,
