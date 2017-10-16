@@ -163,8 +163,8 @@ class TLDetector(object):
 
         fx = self.config['camera_info']['focal_length_x']
         fy = self.config['camera_info']['focal_length_y']
-        fx = 755.0
-        fy = 255.0
+        # fx = 755.0
+        # fy = 255.0
         image_width = self.config['camera_info']['image_width']
         image_height = self.config['camera_info']['image_height']
 
@@ -197,8 +197,8 @@ class TLDetector(object):
             # Map between car coord to cv2
             rospy.loginfo(trans)
             rospy.loginfo(euler)
-            # trans = [trans[1], trans[2], trans[0]]
-            # euler = [euler[1], euler[2], euler[0]]
+            trans = np.array([trans[1], trans[2], trans[0]])
+            euler = np.array([euler[1], euler[2], euler[0]])
 
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
             x = img_points[0][0][0]
