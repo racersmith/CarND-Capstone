@@ -162,6 +162,8 @@ class TLDetector(object):
 
         fx = self.config['camera_info']['focal_length_x']
         fy = self.config['camera_info']['focal_length_y']
+        fx = 755
+        fy = 255
         image_width = self.config['camera_info']['image_width']
         image_height = self.config['camera_info']['image_height']
 
@@ -193,8 +195,6 @@ class TLDetector(object):
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
             x = img_points[0][0][0]
             y = img_points[0][0][1]
-            rospy.loginfo(img_points)
-
         return (x, y)
 
     def get_light_state(self, light):
