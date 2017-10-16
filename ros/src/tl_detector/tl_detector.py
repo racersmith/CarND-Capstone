@@ -187,7 +187,7 @@ class TLDetector(object):
         y = 0
 
         if trans is not None:
-            obj_points = np.float32([[obj_pos.z, obj_pos.y, obj_pos.x]]).reshape(-1, 3)
+            obj_points = np.float32([[obj_pos.x, obj_pos.y, obj_pos.z]]).reshape(-1, 3)
             euler = tf.transformations.euler_from_quaternion(rot)
             camera_matrix = np.array([[fx, 0, image_width/2],
                                       [0, fy, image_height/2],
