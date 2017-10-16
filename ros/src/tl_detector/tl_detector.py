@@ -195,8 +195,10 @@ class TLDetector(object):
             dist_coef = np.zeros(4)
 
             # Map between car coord to cv2
-            trans = [trans[1], trans[2], trans[0]]
-            euler = [euler[1], euler[2], euler[0]]
+            rospy.loginfo(trans)
+            rospy.loginfo(euler)
+            # trans = [trans[1], trans[2], trans[0]]
+            # euler = [euler[1], euler[2], euler[0]]
 
             img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
             x = img_points[0][0][0]
