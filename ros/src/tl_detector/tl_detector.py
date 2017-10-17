@@ -167,14 +167,14 @@ class TLDetector(object):
         normalizer_y = d*math.tan(fov_y/2)
 
         # Position in image using upper left corner as origin
-        # img_x = image_width + image_width * x/normalizer_x
-        # img_y = image_height + image_height * y/normalizer_y
+        img_x = image_width/2 + image_width * x/normalizer_x
+        img_y = image_height/2 + image_height * y/normalizer_y
 
         # Position in image using image center as origin
-        img_x = image_width * x / normalizer_x
-        img_y = image_height * y / normalizer_y
+        # img_x = image_width * x / normalizer_x
+        # img_y = image_height * y / normalizer_y
 
-        return img_x, img_y
+        return int(img_x), int(img_y)
 
     def project_to_image_plane(self, light):
         """Project point from 3D world coordinates to 2D camera image location
