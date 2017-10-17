@@ -148,6 +148,34 @@ class TLDetector(object):
     def squared_error_2d(self, a, b):
         return (a.x - b.x)**2 + (a.y - b.y)**2
 
+    def project_with_fov(self, point):
+        # Point in space to map to image plane
+        # This point should be relative to the camera
+        d = point.pose.position.x
+        x = point.pose.position.y
+        y = point.pose.position.z
+
+        # Camera characteristics
+        fov_x = self.config['camera_info']['focal_length_x']
+        fov_y = self.config['camera_info']['focal_length_y']
+        image_width = self.config['camera_info']['image_width']
+        image_height = self.config['camera_info']['image_height']
+
+        # This the half height/width of the image when projected
+        # to the depth of the point
+        normalizer_x = d*math.tan(fov_x/2)
+        normalizer_y = d*math.tan(fov_y/2)
+
+        # Position in image using upper left corner as origin
+        img_x = image_width + image_width * x/normalizer_x
+        img_y = image_height + image_height * y/normalizer_y
+
+        # Position in image using image center as origin
+        # img_x = image_width * x / normalizer_x
+        # img_y = image_height * y / normalizer_y
+
+        return img_x, img_y
+
     def project_to_image_plane(self, light):
         """Project point from 3D world coordinates to 2D camera image location
 
@@ -162,36 +190,25 @@ class TLDetector(object):
         obj_pos = light.pose.pose.position
 
         fx = self.config['camera_info']['focal_length_x']
-        fy = self.config['camera_info']['focal_length_y']
-        # fx = 755.0
-        # fy = 255.0
-        image_width = self.config['camera_info']['image_width']
-        image_height = self.config['camera_info']['image_height']
 
         # get transform between pose of camera and world frame
-        trans = None
-        rot = None
+        # trans = None
+        # rot = None
+        base_light = None
 
         try:
-            now = rospy.Time.now()
-            self.listener.waitForTransform("/base_link",
-                  "/world", now, rospy.Duration(1.0))
-            (trans, rot) = self.listener.lookupTransform("/base_link",
-                  "/world", now)
+            # now = rospy.Time.now()
+            # self.listener.waitForTransform("/base_link",
+            #       "/world", now, rospy.Duration(1.0))
+            # (trans, rot) = self.listener.lookupTransform("/base_link",
+            #       "/world", now)
 
             # Transform pose of light relative to car
             # base_light = PoseStamped()
             base_light = self.listener.transformPose("base_link", light.pose)
-            quaternion = (
-                base_light.pose.orientation.x,
-                base_light.pose.orientation.y,
-                base_light.pose.orientation.z,
-                base_light.pose.orientation.w)
-            euler = tf.transformations.euler_from_quaternion(quaternion)
             rospy.loginfo("Light ({:4.2f}, {:4.2f}, {:4.2f}) {:4.2f}".format(base_light.pose.position.x,
                                                                              base_light.pose.position.y,
-                                                                             base_light.pose.position.z,
-                                                                             euler[2]))
+                                                                             base_light.pose.position.z))
             # rospy.loginfo(base_light)
             # rospy.loginfo(euler)
 
@@ -203,23 +220,32 @@ class TLDetector(object):
         x = 0
         y = 0
 
-        if trans is not None:
-            obj_points = np.float32([[obj_pos.x, obj_pos.y, obj_pos.z]]).reshape(-1, 3)
-            euler = tf.transformations.euler_from_quaternion(rot)
-            camera_matrix = np.array([[fx, 0, image_width/2],
-                                      [0, fy, image_height/2],
-                                      [0, 0, 1]])
-            dist_coef = np.zeros(4)
+        # if trans is not None:
+        #     obj_points = np.float32([[obj_pos.x, obj_pos.y, obj_pos.z]]).reshape(-1, 3)
+        #     # euler = tf.transformations.euler_from_quaternion(rot)
+        #     camera_matrix = np.array([[fx, 0, image_width/2],
+        #                               [0, fy, image_height/2],
+        #                               [0, 0, 1]])
+        #     dist_coef = np.zeros(4)
+        #
+        #     # Map between car coord to cv2
+        #     # rospy.loginfo(trans)
+        #     # rospy.loginfo(euler)
+        #     # trans = np.array([trans[1], trans[2], trans[0]])
+        #     # euler = np.array([euler[1], euler[2], euler[0]])
+        #
+        #     img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
+        #     x = img_points[0][0][0]
+        #     y = img_points[0][0][1]
 
-            # Map between car coord to cv2
-            rospy.loginfo(trans)
-            rospy.loginfo(euler)
-            trans = np.array([trans[1], trans[2], trans[0]])
-            euler = np.array([euler[1], euler[2], euler[0]])
+        if base_light is not None:
+            # Simulator uses FOV
+            if fx < 100:
+                x, y = self.project_with_fov(base_light)
+            # Real car uses focal length
+            else:
+                rospy.loginfo('Real car detected...  Process image using focal length!')
 
-            img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
-            x = img_points[0][0][0]
-            y = img_points[0][0][1]
 
         return (x, y)
 
