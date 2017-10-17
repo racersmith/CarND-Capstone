@@ -206,7 +206,7 @@ class TLDetector(object):
             # Transform pose of light relative to car
             # base_light = PoseStamped()
             base_light = self.listener.transformPose("base_link", light.pose)
-            rospy.loginfo("Light ({:4.2f}, {:4.2f}, {:4.2f}) {:4.2f}".format(base_light.pose.position.x,
+            rospy.loginfo("Light ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
                                                                              base_light.pose.position.y,
                                                                              base_light.pose.position.z))
             # rospy.loginfo(base_light)
