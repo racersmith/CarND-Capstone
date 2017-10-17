@@ -171,12 +171,22 @@ class TLDetector(object):
         # get transform between pose of camera and world frame
         trans = None
         rot = None
+
         try:
             now = rospy.Time.now()
             self.listener.waitForTransform("/base_link",
                   "/world", now, rospy.Duration(1.0))
             (trans, rot) = self.listener.lookupTransform("/base_link",
                   "/world", now)
+
+            # Transform pose of light relative to car
+            base_light = rospy.geometry_msgs.msg.PoseStamped
+            self.listener.transformPose("base_link", light, base_light)
+            euler = tf.transformations.euler_from_quaternion(base_light.pose.pose.orientation)
+            rospy.loginfo("Light ({:4.2f}, {4.2f}, {4.2f}, {4.2f}".format(base_light.pose.pose.position.x,
+                                                                          base_light.pose.pose.position.y,
+                                                                          base_light.pose.pose.position.z,
+                                                                          euler[2]*180/3.141))
 
         except (tf.Exception, tf.LookupException, tf.ConnectivityException):
             rospy.logerr("Failed to find camera to map transform")
