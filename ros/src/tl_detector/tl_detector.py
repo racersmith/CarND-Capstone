@@ -188,11 +188,12 @@ class TLDetector(object):
                 base_light.pose.orientation.z,
                 base_light.pose.orientation.w)
             euler = tf.transformations.euler_from_quaternion(quaternion)
-            # rospy.loginfo("Light ({:4.2f}, {4.2f}, {4.2f})".format(base_light.pose.position.x,
-            #                                                        base_light.pose.position.y,
-            #                                                        base_light.pose.position.z))
-            rospy.loginfo(base_light)
-            rospy.loginfo(euler)
+            rospy.loginfo("Light ({:4.2f}, {:4.2f}, {:4.2f}) {:4.2f}".format(base_light.pose.position.x,
+                                                                             base_light.pose.position.y,
+                                                                             base_light.pose.position.z,
+                                                                             euler[2]))
+            # rospy.loginfo(base_light)
+            # rospy.loginfo(euler)
 
         except (tf.Exception, tf.LookupException, tf.ConnectivityException):
             rospy.logerr("Failed to find camera to map transform")
