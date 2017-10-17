@@ -153,7 +153,7 @@ class TLDetector(object):
         # This point should be relative to the camera
         d = point.pose.position.x
         x = point.pose.position.y
-        y = point.pose.position.z
+        y = point.pose.position.z-1
 
         # Camera characteristics
         fov_x = self.config['camera_info']['focal_length_x']
@@ -163,12 +163,12 @@ class TLDetector(object):
 
         # This the half height/width of the image when projected
         # to the depth of the point
-        normalizer_x = d*math.tan(fov_x/2)
-        normalizer_y = d*math.tan(fov_y/2)
+        normalizer_x = d * math.tan(fov_x/2.0)
+        normalizer_y = d * math.tan(fov_y/2.0)
 
         # Position in image using upper left corner as origin
-        img_x = image_width/2 + image_width * x/normalizer_x
-        img_y = image_height/2 + image_height * y/normalizer_y
+        img_x = image_width/2.0 - image_width * x/normalizer_x
+        img_y = image_height/2.0 - image_height * y/normalizer_y
 
         # Position in image using image center as origin
         # img_x = image_width * x / normalizer_x
@@ -206,9 +206,9 @@ class TLDetector(object):
             # Transform pose of light relative to car
             # base_light = PoseStamped()
             base_light = self.listener.transformPose("base_link", light.pose)
-            rospy.loginfo("Light ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
-                                                                             base_light.pose.position.y,
-                                                                             base_light.pose.position.z))
+            rospy.loginfo("Light relative to car ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
+                                                                                     base_light.pose.position.y,
+                                                                                     base_light.pose.position.z))
             # rospy.loginfo(base_light)
             # rospy.loginfo(euler)
 
@@ -267,10 +267,7 @@ class TLDetector(object):
 
         obj_pos = light.pose.pose.position
         x, y = self.project_to_image_plane(light)
-        rospy.loginfo("x: {:4.2f}, y: {:4.2f}, z {:4.2f} -> x: {:4.2f}, y: {:4.2f}".format(obj_pos.x,
-                                                                                           obj_pos.y,
-                                                                                           obj_pos.z,
-                                                                                           x, y))
+        rospy.loginfo("Image Position: {}, {}".format(x, y))
         #TODO use light location to zoom in on traffic light in image
 
         #Get classification
