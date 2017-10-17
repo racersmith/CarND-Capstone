@@ -182,7 +182,12 @@ class TLDetector(object):
             # Transform pose of light relative to car
             # base_light = PoseStamped()
             base_light = self.listener.transformPose("base_link", light.pose)
-            euler = tf.transformations.euler_from_quaternion(base_light.pose.orientation)
+            quaternion = (
+                base_light.pose.orientation.x,
+                base_light.pose.orientation.y,
+                base_light.pose.orientation.z,
+                base_light.pose.orientation.w)
+            euler = tf.transformations.euler_from_quaternion(quaternion)
             # rospy.loginfo("Light ({:4.2f}, {4.2f}, {4.2f})".format(base_light.pose.position.x,
             #                                                        base_light.pose.position.y,
             #                                                        base_light.pose.position.z))
