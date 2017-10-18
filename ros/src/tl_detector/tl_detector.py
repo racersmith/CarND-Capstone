@@ -167,8 +167,8 @@ class TLDetector(object):
         normalizer_y = d * math.tan(fov_y/2.0)
 
         # Position in image using upper left corner as origin
-        img_x = image_width/2.0 - image_width * x/normalizer_x
-        img_y = image_height/2.0 - image_height * y/normalizer_y
+        img_x = image_width/2.0 + image_width/2.0 * x/normalizer_x
+        img_y = image_height/2.0 + image_height/2.0 * y/normalizer_y
 
         # Position in image using image center as origin
         # img_x = image_width * x / normalizer_x
