@@ -295,12 +295,13 @@ class TLDetector(object):
         # TODO use light location to zoom in on traffic light in image
         (ux, uy), (lx, ly) = self.project_to_image_plane(light)
         # rospy.loginfo("Image Position: {}, {}".format(x, y))
+        rospy.loginfo("Image: ({}, {}), ({}, {})".format(ux, uy, lx, ly))
 
 
 
-        light_image = cv_image[uy:ly, ux:lx]
-        image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="rgb8")
-        self.light_roi_pub.publish(image_message)
+        # light_image = cv_image[uy:ly, ux:lx]
+        # image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="rgb8")
+        # self.light_roi_pub.publish(image_message)
 
         #Get classification
         return self.light_classifier.get_classification(cv_image)
