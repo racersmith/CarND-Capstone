@@ -300,7 +300,7 @@ class TLDetector(object):
 
 
             light_image = cv_image[y1:y2, x1:x2]
-            image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="passthrough")
+            image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
             self.light_roi_pub.publish(image_message)
 
             #Get classification
