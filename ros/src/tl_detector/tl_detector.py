@@ -234,8 +234,6 @@ class TLDetector(object):
 
         #TODO Use transform and rotation to calculate 2D position of light in image
 
-        x = 0
-        y = 0
 
         # if trans is not None:
         #     obj_points = np.float32([[obj_pos.x, obj_pos.y, obj_pos.z]]).reshape(-1, 3)
@@ -266,13 +264,14 @@ class TLDetector(object):
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
 
+                return (ux, uy), (lx, ly)
 
             # Real car uses focal length
             else:
                 rospy.loginfo('Real car detected...  Process image using focal length!')
 
 
-        return (ux, uy), (lx, ly)
+
 
     def get_light_state(self, light):
         """Determines the current color of the traffic light
@@ -293,15 +292,15 @@ class TLDetector(object):
         obj_pos = light.pose.pose.position
 
         # TODO use light location to zoom in on traffic light in image
-        (ux, uy), (lx, ly) = self.project_to_image_plane(light)
+        (x1, y1), (x2, y2) = self.project_to_image_plane(light)
         # rospy.loginfo("Image Position: {}, {}".format(x, y))
-        rospy.loginfo("Image: ({}, {}), ({}, {})".format(ux, uy, lx, ly))
+        rospy.loginfo("Image: ({}, {}), ({}, {})".format(x1, y1, x2, y2))
 
 
 
-        # light_image = cv_image[uy:ly, ux:lx]
-        # image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="rgb8")
-        # self.light_roi_pub.publish(image_message)
+        light_image = cv_image[y1:y2, x1:x2]
+        image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="rgb8")
+        self.light_roi_pub.publish(image_message)
 
         #Get classification
         return self.light_classifier.get_classification(cv_image)
