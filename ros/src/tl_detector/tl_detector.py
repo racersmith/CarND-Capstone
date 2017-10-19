@@ -14,6 +14,8 @@ import math
 import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
+LIGHT_HEIGHT = 3
+LIGHT_WIDTH = 3
 
 class TLDetector(object):
     def __init__(self):
@@ -45,6 +47,7 @@ class TLDetector(object):
         self.config = yaml.load(config_string)
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
+        self.light_roi_pub = rospy.Publisher('/light_roi', Image, queue_size=1)
 
         self.bridge = CvBridge()
         self.light_classifier = TLClassifier()
@@ -125,6 +128,13 @@ class TLDetector(object):
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
 
+    def clamp(self, value, lower_limit, upper_limit):
+        if value < lower_limit:
+            return lower_limit
+        elif value > upper_limit:
+            return upper_limit
+        return value
+
     def get_closest_waypoint(self, pos):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem
@@ -148,12 +158,12 @@ class TLDetector(object):
     def squared_error_2d(self, a, b):
         return (a.x - b.x)**2 + (a.y - b.y)**2
 
-    def project_with_fov(self, point):
+    def project_with_fov(self, d, x, y):
         # Point in space to map to image plane
         # This point should be relative to the camera
-        d = point.pose.position.x
-        x = point.pose.position.y
-        y = point.pose.position.z-1
+        # d = point.pose.position.x
+        # x = point.pose.position.y
+        # y = point.pose.position.z - 1
 
         # Camera characteristics
         fov_x = self.config['camera_info']['focal_length_x']
@@ -171,12 +181,15 @@ class TLDetector(object):
         # img_y = image_height/2.0 + image_height/2.0 * y/normalizer_y
 
         # img_y = math.atan(y/d)/fov_y*image_height
-        img_x = 2650*x/d
-        img_y = 2250*y/d
+        img_x = 2574*x/d + 0.5*image_width
+        img_y = 2740*y/d
 
         # Position in image using image center as origin
         # img_x = image_width * x / normalizer_x
         # img_y = image_height * y / normalizer_y
+
+        img_x = self.clamp(img_x, 0, image_width)
+        img_y = self.clamp(img_y, 0, image_height)
 
         return int(img_x), int(img_y)
 
@@ -245,13 +258,21 @@ class TLDetector(object):
         if base_light is not None:
             # Simulator uses FOV
             if fx < 100:
-                x, y = self.project_with_fov(base_light)
+                # x, y = self.project_with_fov(base_light)
+                d = base_light.pose.position.x
+                x = base_light.pose.position.y
+                y = base_light.pose.position.z - 1
+
+                ux, uy = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
+                lx, ly = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
+
+
             # Real car uses focal length
             else:
                 rospy.loginfo('Real car detected...  Process image using focal length!')
 
 
-        return (x, y)
+        return (ux, uy), (lx, ly)
 
     def get_light_state(self, light):
         """Determines the current color of the traffic light
@@ -270,9 +291,16 @@ class TLDetector(object):
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
         obj_pos = light.pose.pose.position
-        x, y = self.project_to_image_plane(light)
-        rospy.loginfo("Image Position: {}, {}".format(x, y))
-        #TODO use light location to zoom in on traffic light in image
+
+        # TODO use light location to zoom in on traffic light in image
+        (ux, uy), (lx, ly) = self.project_to_image_plane(light)
+        # rospy.loginfo("Image Position: {}, {}".format(x, y))
+
+
+
+        light_image = cv_image[uy:ly, ux:lx]
+        image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="rgb8")
+        self.light_roi_pub.publish(image_message)
 
         #Get classification
         return self.light_classifier.get_classification(cv_image)
