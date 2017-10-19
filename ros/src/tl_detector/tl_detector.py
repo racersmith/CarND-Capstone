@@ -259,7 +259,7 @@ class TLDetector(object):
                 # x, y = self.project_with_fov(base_light)
                 d = base_light.pose.position.x
                 x = base_light.pose.position.y
-                y = base_light.pose.position.z
+                y = base_light.pose.position.z - 1.5
 
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
@@ -293,17 +293,18 @@ class TLDetector(object):
 
         # TODO use light location to zoom in on traffic light in image
         (x1, y1), (x2, y2) = self.project_to_image_plane(light)
-        # rospy.loginfo("Image Position: {}, {}".format(x, y))
-        rospy.loginfo("Image: ({}, {}), ({}, {})".format(x1, y1, x2, y2))
+        if x1 is not None:
+            # rospy.loginfo("Image Position: {}, {}".format(x, y))
+            rospy.loginfo("Image: ({}, {}), ({}, {})".format(x1, y1, x2, y2))
 
 
 
-        light_image = cv_image[y1:y2, x1:x2]
-        image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="rgb8")
-        self.light_roi_pub.publish(image_message)
+            light_image = cv_image[y1:y2, x1:x2]
+            image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="passthrough")
+            self.light_roi_pub.publish(image_message)
 
-        #Get classification
-        return self.light_classifier.get_classification(cv_image)
+            #Get classification
+            return self.light_classifier.get_classification(cv_image)
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
