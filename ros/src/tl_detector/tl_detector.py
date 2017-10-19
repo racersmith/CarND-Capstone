@@ -170,7 +170,8 @@ class TLDetector(object):
         img_x = image_width/2.0 + image_width/2.0 * x/normalizer_x
         # img_y = image_height/2.0 + image_height/2.0 * y/normalizer_y
 
-        img_y = math.atan(y/d)/fov_y*image_height
+        # img_y = math.atan(y/d)/fov_y*image_height
+        img_y = 2250*y/d
 
         # Position in image using image center as origin
         # img_x = image_width * x / normalizer_x
