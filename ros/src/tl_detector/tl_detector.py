@@ -164,11 +164,13 @@ class TLDetector(object):
         # This the half height/width of the image when projected
         # to the depth of the point
         normalizer_x = d * math.tan(fov_x/2.0)
-        normalizer_y = d * math.tan(fov_y/2.0)
+        # normalizer_y = d * math.tan(fov_y/2.0)
 
         # Position in image using upper left corner as origin
         img_x = image_width/2.0 + image_width/2.0 * x/normalizer_x
-        img_y = image_height/2.0 + image_height/2.0 * y/normalizer_y
+        # img_y = image_height/2.0 + image_height/2.0 * y/normalizer_y
+
+        img_y = math.atan(y/d)/fov_y*image_height
 
         # Position in image using image center as origin
         # img_x = image_width * x / normalizer_x
