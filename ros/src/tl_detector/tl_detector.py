@@ -259,7 +259,7 @@ class TLDetector(object):
                 # x, y = self.project_with_fov(base_light)
                 d = base_light.pose.position.x
                 x = base_light.pose.position.y
-                y = base_light.pose.position.z - 1
+                y = base_light.pose.position.z
 
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
