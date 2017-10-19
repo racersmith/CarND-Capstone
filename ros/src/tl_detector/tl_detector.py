@@ -263,8 +263,8 @@ class TLDetector(object):
                 x = base_light.pose.position.y
                 y = base_light.pose.position.z - 1
 
-                ux, uy = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
-                lx, ly = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
+                ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
+                lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
 
 
             # Real car uses focal length
