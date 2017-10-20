@@ -261,6 +261,8 @@ class TLDetector(object):
                 x = base_light.pose.position.y
                 y = base_light.pose.position.z - 1.5
 
+                cx, cy = self.project_with_fov(d, x, y)
+                rospy.loginfo("Light Center Point: ({}, {})".format(cx, cy))
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
 
@@ -296,10 +298,6 @@ class TLDetector(object):
         aspect_ratio = (x2-x1)/(y2-y1)
         if x1 is not None:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
-            rospy.loginfo("Image: ({}, {}), ({}, {})".format(x1, y1, x2, y2))
-
-
-
 
             light_image = cv_image[y1:y2, x1:x2]
             light_image = cv2.resize(light_image, (100,100), interpolation = cv2.INTER_CUBIC)
