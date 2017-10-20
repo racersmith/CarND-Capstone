@@ -293,9 +293,11 @@ class TLDetector(object):
 
         # TODO use light location to zoom in on traffic light in image
         (x1, y1), (x2, y2) = self.project_to_image_plane(light)
-        if x1 is not None:
+        aspect_ratio = (x2-x1)/(y2-y1)
+        if x1 is not None and abs(aspect_ratio - LIGHT_WIDTH/LIGHT_HEIGHT) < 0.01:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
             rospy.loginfo("Image: ({}, {}), ({}, {})".format(x1, y1, x2, y2))
+
 
 
 
