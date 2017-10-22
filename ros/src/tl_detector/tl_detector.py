@@ -259,7 +259,7 @@ class TLDetector(object):
                 # x, y = self.project_with_fov(base_light)
                 d = base_light.pose.position.x
                 x = base_light.pose.position.y + 0.5
-                y = base_light.pose.position.z - 1.0
+                y = base_light.pose.position.z - 1.75
 
                 cx, cy = self.project_with_fov(d, x, y)
                 rospy.loginfo("Light Center Point: ({}, {})".format(cx, cy))
