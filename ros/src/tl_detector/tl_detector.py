@@ -305,7 +305,7 @@ class TLDetector(object):
         # TODO use light location to zoom in on traffic light in image
         x1, y1, x2, y2 = self.project_to_image_plane(light)
 
-        if x1 is not None and abs(y2-y1) > 80 and abs(x2-x1) > 80:
+        if x1 is not None and abs(y2-y1) > 70 and abs(x2-x1) > 70:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
 
             light_image = cv_image[y1:y2, x1:x2]
@@ -372,15 +372,15 @@ class TLDetector(object):
 
         # Yellow Light
         elif light_state == 1 and self.n_yellow < low_count + 5:
-            file_name = "{}/yellow/y_{}.png".format(TRAINING_FOLDER, self.n_red)
+            file_name = "{}/yellow/y_{}.png".format(TRAINING_FOLDER, self.n_yellow)
             cv2.imwrite(file_name, image_roi)
-            self.n_red += 1
+            self.n_yellow += 1
 
         # Green Light
         elif light_state == 2 and self.n_green < low_count + 5:
-            file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_red)
+            file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_green)
             cv2.imwrite(file_name, image_roi)
-            self.n_red += 1
+            self.n_green += 1
 
         # Pull out random non-light images
         if self.n_other < low_count:
