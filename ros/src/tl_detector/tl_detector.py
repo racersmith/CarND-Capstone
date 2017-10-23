@@ -305,7 +305,7 @@ class TLDetector(object):
         # TODO use light location to zoom in on traffic light in image
         x1, y1, x2, y2 = self.project_to_image_plane(light)
 
-        if x1 is not None and abs(y2-y1) > 20 and abs(x2-x1) > 20:
+        if x1 is not None and abs(y2-y1) > 80 and abs(x2-x1) > 80:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
 
             light_image = cv_image[y1:y2, x1:x2]
