@@ -71,7 +71,7 @@ class TLDetector(object):
 
         self.n_red = len(os.listdir(TRAINING_FOLDER+"/red"))
         self.n_yellow = len(os.listdir(TRAINING_FOLDER+"/yellow"))
-        self.n_green = len(os.listdir(TRAINING_FOLDER+"/grenn"))
+        self.n_green = len(os.listdir(TRAINING_FOLDER+"/green"))
         self.n_other = len(os.listdir(TRAINING_FOLDER+"/other"))
 
         rospy.spin()
