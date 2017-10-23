@@ -11,11 +11,17 @@ import tf
 import cv2
 import yaml
 import math
+import os
 import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
 LIGHT_HEIGHT = 3
 LIGHT_WIDTH = 3
+# Local
+# TRAINING_FOLDER = '/home/josh/Documents/version-control/CarND-Capstone/tl_data'
+# Virtual
+TRAINING_FOLDER = '/media/sf_tl_data'
+IMG_SIZE = 100
 
 class TLDetector(object):
     def __init__(self):
@@ -61,6 +67,12 @@ class TLDetector(object):
         self.car_index = None
         self.next_waypoints = None
         self.stop_map = None
+
+
+        self.n_red = len(os.listdir(TRAINING_FOLDER+"/red"))
+        self.n_yellow = len(os.listdir(TRAINING_FOLDER+"/yellow"))
+        self.n_green = len(os.listdir(TRAINING_FOLDER+"/grenn"))
+        self.n_other = len(os.listdir(TRAINING_FOLDER+"/other"))
 
         rospy.spin()
 
@@ -266,14 +278,11 @@ class TLDetector(object):
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
 
-                return (ux, uy), (lx, ly)
+                return ux, uy, lx, ly
 
             # Real car uses focal length
             else:
                 rospy.loginfo('Real car detected...  Process image using focal length!')
-
-
-
 
     def get_light_state(self, light):
         """Determines the current color of the traffic light
@@ -294,16 +303,19 @@ class TLDetector(object):
         obj_pos = light.pose.pose.position
 
         # TODO use light location to zoom in on traffic light in image
-        (x1, y1), (x2, y2) = self.project_to_image_plane(light)
-        aspect_ratio = (x2-x1)/(y2-y1)
-        if x1 is not None:
+        x1, y1, x2, y2 = self.project_to_image_plane(light)
+
+        if x1 is not None and abs(y2-y1) > 20 and abs(x2-x1) > 20:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
 
             light_image = cv_image[y1:y2, x1:x2]
-            light_image = cv2.resize(light_image, (100,100), interpolation = cv2.INTER_CUBIC)
+            light_image = cv2.resize(light_image, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_CUBIC)
             image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
 
             self.light_roi_pub.publish(image_message)
+
+            if True:
+                self.save_training_data(cv_image, light_image, light, y1, y2)
 
             #Get classification
             return self.light_classifier.get_classification(cv_image)
@@ -346,6 +358,57 @@ class TLDetector(object):
             state = self.get_light_state(light)
             return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
+
+
+    def save_training_data(self, image, image_roi, light, y1, y2):
+        low_count = min(self.n_red, self.n_yellow, self.n_green)
+        light_state = light.state
+
+        # Red Light
+        if light_state == 0 and self.n_red < low_count + 50:
+            file_name = "{}/red/r_{}.png".format(TRAINING_FOLDER, self.n_red)
+            cv2.imwrite(file_name, image_roi)
+            self.n_red += 1
+
+        # Yellow Light
+        elif light_state == 1 and self.n_yellow < low_count + 50:
+            file_name = "{}/yellow/y_{}.png".format(TRAINING_FOLDER, self.n_red)
+            cv2.imwrite(file_name, image_roi)
+            self.n_red += 1
+
+        # Green Light
+        elif light_state == 2 and self.n_green < low_count + 50:
+            file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_red)
+            cv2.imwrite(file_name, image_roi)
+            self.n_red += 1
+
+        # Pull out random non-light images
+        if self.n_other < low_count + 50:
+            height = abs(y2-y1)
+            image_width = self.config['camera_info']['image_width']
+            image_height = self.config['camera_info']['image_height']
+
+            # Pull non-light image from above light
+            if y1 > image_height - y2 and y1 > 80:
+                height = np.random.randint(20, y1)
+                top = np.random.randint(0, y1-height)
+                left = np.random.randint(0, image_width-height)
+                image_roi = image[top:top+height, left:left+height]
+                image_roi = cv2.resize(image_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                file_name = "{}/other/o_{}.png".format(TRAINING_FOLDER, self.n_other)
+                cv2.imwrite(file_name, image_roi)
+                self.n_other += 1
+
+            # Pull non-light image from below light
+            elif image_height-y2 > 80:
+                height = np.random.randint(y2, image_height)
+                top = np.random.randint(y2, image_height-height)
+                left = np.random.randint(0, image_width-height)
+                image_roi = image[top:top + height, left:left + height]
+                image_roi = cv2.resize(image_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                file_name = "{}/other/o_{}.png".format(TRAINING_FOLDER, self.n_other)
+                cv2.imwrite(file_name, image_roi)
+                self.n_other += 1
 
 if __name__ == '__main__':
     try:
