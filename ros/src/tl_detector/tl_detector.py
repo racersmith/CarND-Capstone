@@ -361,29 +361,31 @@ class TLDetector(object):
 
 
     def save_training_data(self, image, image_roi, light, y1, y2):
-        low_count = min(self.n_red, self.n_yellow, self.n_green)
+        max_count = max(self.n_red, self.n_yellow, self.n_green)
+        if self.n_red == self.n_yellow == self.n_green:
+            max_count += 1
         light_state = light.state
 
         # Red Light
-        if light_state == 0 and self.n_red < low_count + 5:
+        if light_state == 0 and self.n_red < max_count:
             file_name = "{}/red/r_{}.png".format(TRAINING_FOLDER, self.n_red)
             cv2.imwrite(file_name, image_roi)
             self.n_red += 1
 
         # Yellow Light
-        elif light_state == 1 and self.n_yellow < low_count + 5:
+        elif light_state == 1 and self.n_yellow < max_count:
             file_name = "{}/yellow/y_{}.png".format(TRAINING_FOLDER, self.n_yellow)
             cv2.imwrite(file_name, image_roi)
             self.n_yellow += 1
 
         # Green Light
-        elif light_state == 2 and self.n_green < low_count + 5:
+        elif light_state == 2 and self.n_green < max_count:
             file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_green)
             cv2.imwrite(file_name, image_roi)
             self.n_green += 1
 
         # Pull out random non-light images
-        if self.n_other < low_count:
+        if self.n_other < max_count:
             height = abs(y2-y1)
             image_width = self.config['camera_info']['image_width']
             image_height = self.config['camera_info']['image_height']
