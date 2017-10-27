@@ -63,6 +63,7 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+        self.prev_light_loc = None
 
         self.car_index = None
         self.next_waypoints = None
@@ -216,8 +217,6 @@ class TLDetector(object):
             y (int): y coordinate of target point in image
 
         """
-        obj_pos = light.pose.pose.position
-
         fx = self.config['camera_info']['focal_length_x']
 
         # get transform between pose of camera and world frame
