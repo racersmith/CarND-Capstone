@@ -1,10 +1,12 @@
 from styx_msgs.msg import TrafficLight
 from keras.models import load_model
 import numpy as np
+import os
 
 class TLClassifier(object):
     def __init__(self):
         #load classifier
+        print(os.getcwd())
         self.model = load_model('trained_model.h5')
 
     def get_classification(self, image):
