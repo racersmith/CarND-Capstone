@@ -358,42 +358,29 @@ class TLDetector(object):
             return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
 
-    @staticmethod
-    def gen_step(number, step_size):
-        x = number / step_size + 1
-        x = step_size * x
-        return x
-
     def save_training_data(self, image, image_roi, light, y1, y2):
-        # Allow each class to generate upto a stepped stopping point
-        # Once all have reached the stop point increase to the next
-        min_count = min(self.n_red, self.n_yellow, self.n_green)
-        max_count = self.gen_step(min_count, 100)
-
-        if self.n_red == self.n_yellow == self.n_green:
-            max_count += 1
         light_state = light.state
 
         # Red Light
-        if light_state == 0 and self.n_red < max_count:
+        if light_state == 0 and self.n_red < self.n_green:
             file_name = "{}/red/r_{}.png".format(TRAINING_FOLDER, self.n_red)
             cv2.imwrite(file_name, image_roi)
             self.n_red += 1
 
         # Yellow Light
-        elif light_state == 1 and self.n_yellow < max_count:
+        elif light_state == 1 and self.n_yellow < self.n_green:
             file_name = "{}/yellow/y_{}.png".format(TRAINING_FOLDER, self.n_yellow)
             cv2.imwrite(file_name, image_roi)
             self.n_yellow += 1
 
         # Green Light
-        elif light_state == 2 and self.n_green < max_count:
+        elif light_state == 2 and self.n_green < self.n_green:
             file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_green)
             cv2.imwrite(file_name, image_roi)
             self.n_green += 1
 
         # Pull out random non-light images
-        if self.n_other < max_count:
+        if self.n_other < self.n_green:
             height = abs(y2-y1)
             image_width = self.config['camera_info']['image_width']
             image_height = self.config['camera_info']['image_height']
