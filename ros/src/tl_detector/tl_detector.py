@@ -315,7 +315,7 @@ class TLDetector(object):
                 self.save_training_data(cv_image, light_image, light, y1, y2)
 
             #Get classification
-            return self.light_classifier.get_classification(cv_image)
+            return self.light_classifier.get_classification(light_image)
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
