@@ -374,7 +374,7 @@ class TLDetector(object):
             self.n_yellow += 1
 
         # Green Light
-        elif light_state == 2 and self.n_green < self.n_green:
+        elif light_state == 2:
             file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_green)
             cv2.imwrite(file_name, image_roi)
             self.n_green += 1
