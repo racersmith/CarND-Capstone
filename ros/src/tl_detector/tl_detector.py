@@ -21,7 +21,8 @@ LIGHT_WIDTH = 3
 # TRAINING_FOLDER = '/home/josh/Documents/version-control/CarND-Capstone/tl_data'
 # Virtual
 TRAINING_FOLDER = '/media/sf_tl_data'
-IMG_SIZE = 100
+IMG_SIZE = 24
+GEN_TRAINING_DATA = False
 
 class TLDetector(object):
     def __init__(self):
@@ -234,9 +235,9 @@ class TLDetector(object):
             # Transform pose of light relative to car
             # base_light = PoseStamped()
             base_light = self.listener.transformPose("base_link", light.pose)
-            rospy.loginfo("Light relative to car ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
-                                                                                     base_light.pose.position.y,
-                                                                                     base_light.pose.position.z))
+            # rospy.loginfo("Light relative to car ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
+            #                                                                          base_light.pose.position.y,
+            #                                                                          base_light.pose.position.z))
             # rospy.loginfo(base_light)
             # rospy.loginfo(euler)
 
@@ -273,7 +274,7 @@ class TLDetector(object):
                 y = base_light.pose.position.z - 1.75
 
                 cx, cy = self.project_with_fov(d, x, y)
-                rospy.loginfo("Light Center Point: ({}, {})".format(cx, cy))
+                # rospy.loginfo("Light Center Point: ({}, {})".format(cx, cy))
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
 
@@ -311,9 +312,8 @@ class TLDetector(object):
             light_image = cv2.resize(light_image, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_CUBIC)
             image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
 
-            self.light_roi_pub.publish(image_message)
-
-            if True:
+            if GEN_TRAINING_DATA:
+                self.light_roi_pub.publish(image_message)
                 self.save_training_data(cv_image, light_image, light, y1, y2)
 
             #Get classification
@@ -347,10 +347,10 @@ class TLDetector(object):
             # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index,
             #                                                                 dist,
             #                                                                 self.lights[traffic_index].state))
-            rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
-                                                                     traffic_index,
-                                                                     next_stop_index,
-                                                                     dist))
+            # rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
+            #                                                          traffic_index,
+            #                                                          next_stop_index,
+            #                                                          dist))
 
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]

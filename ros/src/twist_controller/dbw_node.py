@@ -95,7 +95,7 @@ class DBWNode(object):
 
     # Calculate and publish Drive-by-Wire commands
     def loop(self):
-        rate = rospy.Rate(10)  # 50Hz
+        rate = rospy.Rate(50)  # 50Hz
         while not rospy.is_shutdown():
             # Get predicted control commands
             throttle, brake, steering = self.controller.control(self.target_linear_velocity,
