@@ -299,9 +299,12 @@ class TLDetector(object):
 
         obj_pos = light.pose.pose.position
 
-        # TODO use light location to zoom in on traffic light in image
-        x1, y1, x2, y2 = self.project_to_image_plane(light)
+        # use light location to zoom in on traffic light in image
+        bbox = self.project_to_image_plane(light)
+        if bbox is None:
+            return TrafficLight.UNKNOWN
 
+        x1, y1, x2, y2 = bbox
         if x1 is not None and abs(y2-y1) > 70 and abs(x2-x1) > 70:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
 
@@ -331,8 +334,7 @@ class TLDetector(object):
         next_stop_index = -1
         traffic_index = None
         if self.car_index is not None and self.stop_map is not None:
-            # TODO find the closest visible traffic light (if one exists)
-            # Next Light
+            # find the closest visible traffic light (if one exists)
             next_stop_index = self.stop_map[0]
             traffic_index = 0
             for i, stop_index in enumerate(self.stop_map):
