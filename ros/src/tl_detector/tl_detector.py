@@ -359,9 +359,18 @@ class TLDetector(object):
             return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
 
+    @staticmethod
+    def gen_step(number, step_size):
+        x = number / step_size + 1
+        x = step_size * x
+        return x
 
     def save_training_data(self, image, image_roi, light, y1, y2):
-        max_count = max(self.n_red, self.n_yellow, self.n_green)
+        # Allow each class to generate upto a stepped stopping point
+        # Once all have reached the stop point increase to the next
+        min_count = max(self.n_red, self.n_yellow, self.n_green)
+        max_count = self.gen_step(min_count, 100)
+
         if self.n_red == self.n_yellow == self.n_green:
             max_count += 1
         light_state = light.state
