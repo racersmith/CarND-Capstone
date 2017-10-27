@@ -6,8 +6,8 @@ import os
 class TLClassifier(object):
     def __init__(self):
         #load classifier
-        print(os.getcwd())
-        self.model = load_model('trained_model.h5')
+        print("TLClassifier dir: ", os.getcwd())
+        self.model = load_model('light_classification/trained_model.h5')
 
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
