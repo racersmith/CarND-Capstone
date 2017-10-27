@@ -368,7 +368,7 @@ class TLDetector(object):
     def save_training_data(self, image, image_roi, light, y1, y2):
         # Allow each class to generate upto a stepped stopping point
         # Once all have reached the stop point increase to the next
-        min_count = max(self.n_red, self.n_yellow, self.n_green)
+        min_count = min(self.n_red, self.n_yellow, self.n_green)
         max_count = self.gen_step(min_count, 100)
 
         if self.n_red == self.n_yellow == self.n_green:
