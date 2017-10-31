@@ -404,7 +404,7 @@ class TLDetector(object):
             image_height = self.config['camera_info']['image_height']
 
             # Pull non-light image from above light
-            if y1 > image_height - y2 and y1 > IMG_SIZE:
+            if y1 > image_height - y2 and y1 > IMG_SIZE*2:
                 height = np.random.randint(IMG_SIZE, y1)
                 top = np.random.randint(0, y1-height)
                 left = np.random.randint(0, image_width-height)
@@ -415,7 +415,7 @@ class TLDetector(object):
                 self.n_other += 1
 
             # Pull non-light image from below light
-            elif image_height-y2 > IMG_SIZE:
+            elif image_height - y2 > IMG_SIZE*2:
                 height = np.random.randint(y2, image_height)
                 top = np.random.randint(y2, image_height-height)
                 left = np.random.randint(0, image_width-height)
