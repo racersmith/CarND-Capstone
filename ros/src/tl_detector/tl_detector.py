@@ -227,7 +227,7 @@ class TLDetector(object):
         # rot = None
         base_light = None
 
-        base_light = self.listener.transformPose("base_link", light.pose)
+        # base_light = self.listener.transformPose("base_link", light.pose)
 
         try:
             # now = rospy.Time.now()
@@ -238,6 +238,8 @@ class TLDetector(object):
 
             # Transform pose of light relative to car
             # base_light = PoseStamped()
+            self.listener.waitForTransform("/base_link",
+                  light.header.frame_id, now, rospy.Duration(1.0))
             base_light = self.listener.transformPose("base_link", light.pose)
             # rospy.loginfo("Light relative to car ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
             #                                                                          base_light.pose.position.y,
