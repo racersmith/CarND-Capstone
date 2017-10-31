@@ -376,7 +376,7 @@ class TLDetector(object):
     def save_training_data(self, image, image_roi, light, y1, y2):
         light_state = light.state
 
-        straggler = np.min(self.n_green, self.n_yellow, self.n_red)
+        straggler = np.min([self.n_green, self.n_yellow, self.n_red])
         allowed_lead = 25
 
         # Red Light
