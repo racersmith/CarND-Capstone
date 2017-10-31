@@ -8,12 +8,14 @@ class TLClassifier(object):
         #load classifier
         print("TLClassifier dir: ", os.getcwd())
         self.model = load_model('light_classification/trained_model.h5')
-
+        print(self.model.summary())
         # Test model
-        dummy_image = np.arange(24*24*3).reshape(24,24,3)
+        dummy_image = np.zeros((24,24,3))
+        print(self.model.predict(np.array([dummy_image])))
         print(self.get_classification(dummy_image))
 
-        self.model._make_predict_function()
+        # self.model._make_predict_function()
+
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
 
