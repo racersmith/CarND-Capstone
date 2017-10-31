@@ -238,6 +238,8 @@ class TLDetector(object):
 
             # Transform pose of light relative to car
             # base_light = PoseStamped()
+
+            now = rospy.Time.now()
             self.listener.waitForTransform("/base_link",
                   light.header.frame_id, now, rospy.Duration(1.0))
             base_light = self.listener.transformPose("base_link", light.pose)
