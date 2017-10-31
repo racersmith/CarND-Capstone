@@ -72,7 +72,7 @@ class TLDetector(object):
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
         self.light_roi_pub = rospy.Publisher('/light_roi', Image, queue_size=1)
-        self.light_state_pub = rospy.Publisher('/light_state', TrafficLight, queue_size=1)
+        self.light_state_pub = rospy.Publisher('/light_state', Int32, queue_size=1)
 
         rospy.spin()
 
