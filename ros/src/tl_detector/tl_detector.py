@@ -72,7 +72,7 @@ class TLDetector(object):
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
         self.light_roi_pub = rospy.Publisher('/light_roi', Image, queue_size=1)
-        self.light_state = rospy.Publisher('/light_state', TrafficLight, queue_size=1)
+        self.light_state_pub = rospy.Publisher('/light_state', TrafficLight, queue_size=1)
 
         rospy.spin()
 
@@ -318,7 +318,11 @@ class TLDetector(object):
                 self.save_training_data(cv_image, light_image, light, y1, y2)
 
             #Get classification
-            return self.light_classifier.get_classification(light_image)
+            light_state = self.light_classifier.get_classification(light_image)
+            self.light_roi_pub.publish(image_message)
+            self.light_state_pub.publish(light_state)
+
+            return light_state
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
