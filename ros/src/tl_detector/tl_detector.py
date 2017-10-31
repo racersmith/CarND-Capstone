@@ -134,7 +134,10 @@ class TLDetector(object):
             self.state = state
         elif self.state_count >= STATE_COUNT_THRESHOLD:
             self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
+            if state == TrafficLight.RED:
+                light_wp = light_wp
+            else:
+                light_wp = -1
             self.last_wp = light_wp
             self.upcoming_red_light_pub.publish(Int32(light_wp))
         else:
@@ -224,6 +227,8 @@ class TLDetector(object):
         # rot = None
         base_light = None
 
+        base_light = self.listener.transformPose("base_link", light.pose)
+
         try:
             # now = rospy.Time.now()
             # self.listener.waitForTransform("/base_link",
@@ -242,6 +247,7 @@ class TLDetector(object):
 
         except (tf.Exception, tf.LookupException, tf.ConnectivityException):
             rospy.logerr("Failed to find camera to map transform")
+            return None
 
         #TODO Use transform and rotation to calculate 2D position of light in image
 
