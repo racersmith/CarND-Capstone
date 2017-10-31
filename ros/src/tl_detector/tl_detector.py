@@ -42,6 +42,15 @@ class TLDetector(object):
         self.state_count = 0
         self.prev_light_loc = None
 
+        self.bridge = CvBridge()
+        self.light_classifier = TLClassifier()
+        self.listener = tf.TransformListener()
+
+        self.n_red = len(os.listdir(TRAINING_FOLDER+"/red"))
+        self.n_yellow = len(os.listdir(TRAINING_FOLDER+"/yellow"))
+        self.n_green = len(os.listdir(TRAINING_FOLDER+"/green"))
+        self.n_other = len(os.listdir(TRAINING_FOLDER+"/other"))
+
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
@@ -64,14 +73,7 @@ class TLDetector(object):
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
         self.light_roi_pub = rospy.Publisher('/light_roi', Image, queue_size=1)
 
-        self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
-        self.listener = tf.TransformListener()
 
-        self.n_red = len(os.listdir(TRAINING_FOLDER+"/red"))
-        self.n_yellow = len(os.listdir(TRAINING_FOLDER+"/yellow"))
-        self.n_green = len(os.listdir(TRAINING_FOLDER+"/green"))
-        self.n_other = len(os.listdir(TRAINING_FOLDER+"/other"))
 
         rospy.spin()
 

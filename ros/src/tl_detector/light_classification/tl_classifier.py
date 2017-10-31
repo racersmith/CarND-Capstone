@@ -29,11 +29,9 @@ class TLClassifier(object):
 
         light_state = np.argmax(self.model.predict(np.array([image])))
 
-        if light_state == 0:
-            return TrafficLight.RED
-        if light_state == 1:
-            return TrafficLight.YELLOW
-        if light_state == 2:
-            return TrafficLight.GREEN
+        light = TrafficLight()
+        if light_state == 3:
+            light.state = 4
         else:
-            return TrafficLight.UNKOWN
+            light.state = light_state
+        return light
