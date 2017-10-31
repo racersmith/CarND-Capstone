@@ -22,7 +22,7 @@ LIGHT_WIDTH = 3
 # Virtual
 TRAINING_FOLDER = '/media/sf_tl_data'
 IMG_SIZE = 24
-GEN_TRAINING_DATA = False
+GEN_TRAINING_DATA = True
 
 class TLDetector(object):
     def __init__(self):
@@ -376,26 +376,29 @@ class TLDetector(object):
     def save_training_data(self, image, image_roi, light, y1, y2):
         light_state = light.state
 
+        straggler = np.min(self.n_green, self.n_yellow, self.n_red)
+        allowed_lead = 25
+
         # Red Light
-        if light_state == 0 and self.n_red < self.n_green:
+        if light_state == 0 and self.n_red < straggler + allowed_lead:
             file_name = "{}/red/r_{}.png".format(TRAINING_FOLDER, self.n_red)
             cv2.imwrite(file_name, image_roi)
             self.n_red += 1
 
         # Yellow Light
-        elif light_state == 1 and self.n_yellow < self.n_green:
+        elif light_state == 1 and self.n_yellow < straggler + allowed_lead:
             file_name = "{}/yellow/y_{}.png".format(TRAINING_FOLDER, self.n_yellow)
             cv2.imwrite(file_name, image_roi)
             self.n_yellow += 1
 
         # Green Light
-        elif light_state == 2:
+        elif light_state == 2 and self.n_green < straggler + allowed_lead:
             file_name = "{}/green/g_{}.png".format(TRAINING_FOLDER, self.n_green)
             cv2.imwrite(file_name, image_roi)
             self.n_green += 1
 
         # Pull out random non-light images
-        if self.n_other < self.n_green:
+        if self.n_other < straggler:
             height = abs(y2-y1)
             image_width = self.config['camera_info']['image_width']
             image_height = self.config['camera_info']['image_height']
