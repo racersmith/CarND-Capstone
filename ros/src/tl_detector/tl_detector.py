@@ -21,6 +21,7 @@ LIGHT_WIDTH = 3
 # TRAINING_FOLDER = '/home/josh/Documents/version-control/CarND-Capstone/tl_data'
 # Virtual
 TRAINING_FOLDER = '/media/sf_tl_data'
+TRAINING_IMG_SIZE = 100
 IMG_SIZE = 24
 GEN_TRAINING_DATA = True
 
@@ -409,7 +410,7 @@ class TLDetector(object):
                 top = np.random.randint(0, y1-height)
                 left = np.random.randint(0, image_width-height)
                 image_roi = image[top:top+height, left:left+height]
-                image_roi = cv2.resize(image_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                image_roi = cv2.resize(image_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
                 file_name = "{}/other/o_{}.png".format(TRAINING_FOLDER, self.n_other)
                 cv2.imwrite(file_name, image_roi)
                 self.n_other += 1
@@ -420,7 +421,7 @@ class TLDetector(object):
                 top = np.random.randint(y2, image_height-height)
                 left = np.random.randint(0, image_width-height)
                 image_roi = image[top:top + height, left:left + height]
-                image_roi = cv2.resize(image_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                image_roi = cv2.resize(image_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
                 file_name = "{}/other/o_{}.png".format(TRAINING_FOLDER, self.n_other)
                 cv2.imwrite(file_name, image_roi)
                 self.n_other += 1
