@@ -21,8 +21,8 @@ LIGHT_WIDTH = 3
 # TRAINING_FOLDER = '/home/josh/Documents/version-control/CarND-Capstone/tl_data'
 # Virtual
 TRAINING_FOLDER = '/media/sf_tl_data'
-TRAINING_IMG_SIZE = 100
 IMG_SIZE = 24
+TRAINING_IMG_SIZE = 100
 GEN_TRAINING_DATA = True
 
 class TLDetector(object):
@@ -321,13 +321,13 @@ class TLDetector(object):
         if x1 is not None and abs(y2-y1) > 70 and abs(x2-x1) > 70:
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
 
-            light_image = cv_image[y1:y2, x1:x2]
-            light_image = cv2.resize(light_image, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_CUBIC)
+            light_roi = cv_image[y1:y2, x1:x2]
+            light_image = cv2.resize(light_roi, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_CUBIC)
             image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
 
             if GEN_TRAINING_DATA:
-                self.light_roi_pub.publish(image_message)
-                self.save_training_data(cv_image, light_image, light, y1, y2)
+                training_img = cv2.resize(light_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                self.save_training_data(cv_image, training_img, light, y1, y2)
 
             #Get classification
             light_state = self.light_classifier.get_classification(light_image)
@@ -410,7 +410,7 @@ class TLDetector(object):
                 top = np.random.randint(0, y1-height)
                 left = np.random.randint(0, image_width-height)
                 image_roi = image[top:top+height, left:left+height]
-                image_roi = cv2.resize(image_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                image_roi = cv2.resize(image_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
                 file_name = "{}/other/o_{}.png".format(TRAINING_FOLDER, self.n_other)
                 cv2.imwrite(file_name, image_roi)
                 self.n_other += 1
@@ -421,7 +421,7 @@ class TLDetector(object):
                 top = np.random.randint(y2, image_height-height)
                 left = np.random.randint(0, image_width-height)
                 image_roi = image[top:top + height, left:left + height]
-                image_roi = cv2.resize(image_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                image_roi = cv2.resize(image_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
                 file_name = "{}/other/o_{}.png".format(TRAINING_FOLDER, self.n_other)
                 cv2.imwrite(file_name, image_roi)
                 self.n_other += 1
