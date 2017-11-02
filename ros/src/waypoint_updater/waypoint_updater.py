@@ -134,35 +134,30 @@ class WaypointUpdater(object):
     # Search for the closest base waypoint to the current pose
     # Start search at
     def find_closest_base_waypoint(self, starting_index, n_points):
-        closest_index = starting_index%self.n_base_waypoints
+        closest_index = starting_index % self.n_base_waypoints
         closest = self.distance(self.pos,
                                 self.base_waypoints[closest_index].pose.pose.position)
         for i in range(1, n_points):
-            test_index = (starting_index+i)%self.n_base_waypoints
+            test_index = (starting_index+i) % self.n_base_waypoints
             test_distance = self.distance(self.pos,
                                           self.base_waypoints[test_index].pose.pose.position)
             if test_distance < closest:
                 closest = test_distance
                 closest_index = test_index
 
-            # Recursively search if the closest was found at an endpoint
-            if n_points < self.n_base_waypoints:
-                # closest was the first point
-                if closest_index == starting_index:
-                    starting_index -= (n_points - 1 - 1)
-                    while starting_index < 0:
-                        starting_index += self.n_base_waypoints
+        # Recursively search if the closest was found at an endpoint
+        if n_points < self.n_base_waypoints:
+            # closest was the first point
+            if closest_index == starting_index:
+                starting_index -= (n_points - 1 - 1)
+                while starting_index < 0:
+                    starting_index += self.n_base_waypoints
+                closest_index = self.find_closest_base_waypoint(starting_index, n_points)
 
-                    closest_index = self.find_closest_base_waypoint(starting_index, n_points)
-
-                # closest was last point
-                elif closest_index == starting_index + n_points - 1:
-                    starting_index += (n_points - 1 - 1)
-
-                    # I modulo at the start of the function... no need for this
-                    # starting_index = starting_index % self.n_base_waypoints
-
-                    closest_index = self.find_closest_base_waypoint(starting_index, n_points)
+            # closest was last point
+            elif closest_index == starting_index + n_points - 1:
+                starting_index += (n_points - 1 - 1)
+                closest_index = self.find_closest_base_waypoint(starting_index, n_points)
 
         return closest_index
 
