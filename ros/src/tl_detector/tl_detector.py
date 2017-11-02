@@ -23,7 +23,7 @@ LIGHT_WIDTH = 3
 TRAINING_FOLDER = '/media/sf_tl_data'
 IMG_SIZE = 24
 TRAINING_IMG_SIZE = 100
-GEN_TRAINING_DATA = True
+GEN_TRAINING_DATA = False
 
 class TLDetector(object):
     def __init__(self):
@@ -122,7 +122,7 @@ class TLDetector(object):
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
-        rospy.loginfo("light WP: {}, Light state: {}, Count: {}".format(light_wp, state, self.state_count))
+        # rospy.loginfo("light WP: {}, Light state: {}, Count: {}".format(light_wp, state, self.state_count))
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -328,10 +328,10 @@ class TLDetector(object):
             if GEN_TRAINING_DATA:
                 training_img = cv2.resize(light_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
                 self.save_training_data(cv_image, training_img, light, y1, y2)
+                self.light_roi_pub.publish(image_message)
 
             #Get classification
             light_state = self.light_classifier.get_classification(light_image)
-            self.light_roi_pub.publish(image_message)
             self.light_state_pub.publish(light_state)
 
             return light_state
