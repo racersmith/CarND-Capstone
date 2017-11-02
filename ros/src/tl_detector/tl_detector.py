@@ -350,7 +350,7 @@ class TLDetector(object):
         stop_line_positions = self.config['stop_line_positions']
         next_stop_index = -1
         traffic_index = None
-        if self.car_index is not None and self.stop_map is not None:
+        if self.car_index is not None and self.stop_map is not None and self.pose is not None:
             # find the closest visible traffic light (if one exists)
             next_stop_index = self.stop_map[0]
             traffic_index = 0
@@ -358,8 +358,8 @@ class TLDetector(object):
                 if stop_index >= self.car_index > next_stop_index:
                     next_stop_index = stop_index
                     traffic_index = i
-
-            dist = math.sqrt(self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position))
+            # se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
+            # dist = math.sqrt(se)
             # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index,
             #                                                                 dist,
             #                                                                 self.lights[traffic_index].state))
