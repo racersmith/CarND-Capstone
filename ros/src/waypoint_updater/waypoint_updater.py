@@ -152,7 +152,7 @@ class WaypointUpdater(object):
                     starting_index -= (n_points - 1 - 1)
                     while starting_index < 0:
                         starting_index += self.n_base_waypoints
-                    print("Found at start")
+
                     closest_index = self.find_closest_base_waypoint(starting_index, n_points)
 
                 # closest was last point
@@ -162,7 +162,6 @@ class WaypointUpdater(object):
                     # I modulo at the start of the function... no need for this
                     # starting_index = starting_index % self.n_base_waypoints
 
-                    print("Found at end")
                     closest_index = self.find_closest_base_waypoint(starting_index, n_points)
 
         return closest_index
@@ -180,7 +179,7 @@ class WaypointUpdater(object):
 
     # Update waypoints and publish
     def update_waypoints(self):
-        rate = rospy.Rate(10)  # 10hz
+        rate = rospy.Rate(2)  # 10hz
         while not rospy.is_shutdown():
             if self.base_waypoints is not None and self.pose is not None:
                 search_index = 0
@@ -210,7 +209,6 @@ class WaypointUpdater(object):
                 lane.waypoints = final_waypoints
                 self.final_waypoints_pub.publish(lane)
                 self.last_waypoint_index = next_waypoint
-
 
             rate.sleep()
 
