@@ -106,10 +106,10 @@ class TLDetector(object):
         # Find next light
         # Determine distance
         # Set stop waypoint
-        for i, light in enumerate(msg.lights):
-            dist = math.sqrt(self.squared_error_2d(self.pose.pose.position, light.pose.pose.position))
-            state = light.state
-            # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
+        # for i, light in enumerate(msg.lights):
+        #     dist = math.sqrt(self.squared_error_2d(self.pose.pose.position, light.pose.pose.position))
+        #     state = light.state
+        #     rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
 
     def image_cb(self, msg):
         """Identifies red lights in the incoming camera image and publishes the index
