@@ -27,7 +27,7 @@ LOOKAHEAD_WPS = 50  # Number of waypoints we will publish. You can change this n
 # Acceleration limit to determine if the car can stop for the light
 # This serves as a quick calculation and does not use JMT.
 # Accleration may actually exceed this value by some amount.
-RED_LIGHT_MAX_ACCEL = 9.81
+RED_LIGHT_MAX_ACCEL = -9.81
 
 # Target acceleration for velocity changes when situation allows
 TARGET_ACCEL = 9.81*0.5
