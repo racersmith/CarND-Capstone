@@ -48,7 +48,7 @@ class WaypointUpdater(object):
         self.car_index_pub = rospy.Publisher('car_index', Int32, queue_size=1)
 
         # Parameters
-        self.speed_limit = self.kmph2mps(rospy.get_param('~velocity'))
+        self.speed_limit = self.kmph2mps(rospy.get_param('waypoint_loader/velocity'))
 
         self.base_waypoints = None
         self.base_s = [0]
