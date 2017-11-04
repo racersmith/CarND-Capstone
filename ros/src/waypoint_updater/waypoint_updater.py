@@ -208,7 +208,7 @@ class WaypointUpdater(object):
                 stop_accel = RED_LIGHT_MAX_ACCEL
             stop_accel = self.target_accel(self.vel, 0, distance_to_light)
             # Should we react?
-            if TARGET_ACCEL <= stop_accel < RED_LIGHT_MAX_ACCEL:
+            if RED_LIGHT_MAX_ACCEL < stop_accel <= -TARGET_ACCEL:
                 # Set waypoint speeds
                 for i in range(len(waypoints)):
                     d = self.base_s[next_index+i] - s0
