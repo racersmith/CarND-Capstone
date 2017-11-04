@@ -92,7 +92,7 @@ class TLDetector(object):
             self.stop_map = []
             for x, y in self.config['stop_line_positions']:
                 stop_point = self.Point(x, y)
-                self.stop_map.append(self.get_closest_waypoint(stop_point))
+                self.stop_map.append(self.get_closest_waypoint(stop_point)-5)
                 rospy.loginfo("Stop Index: {}".format(self.stop_map[-1]))
 
     def car_index_cb(self, msg):
