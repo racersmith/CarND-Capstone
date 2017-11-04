@@ -179,11 +179,18 @@ class WaypointUpdater(object):
 
     @staticmethod
     def distance_to_speed(v0, vt, a):
+        if abs(a) < 0.01:
+            return 100
         t = (vt - v0) / a
         return 1 / 2 * a * t ** 2 + v0 * t
 
     @staticmethod
     def target_accel(v0, vt, d):
+        if abs(d) < 0.1:
+            if v0 > vt:
+                return 1
+            else:
+                return -1
         return (vt ** 2 - v0 ** 2) / (2 * d)
 
     @staticmethod
@@ -203,7 +210,10 @@ class WaypointUpdater(object):
                 # Set waypoint speeds
                 for i in range(len(waypoints)):
                     d = self.base_s[next_index+i] - s0
-                    v = self.target_velocity(d, stop_accel, self.vel)
+                    if abs(d) < 0.1:
+                        v = 0
+                    else:
+                        v = self.target_velocity(d, stop_accel, self.vel)
                     if v < 1.0:
                         v = 0
                     self.set_waypoint_velocity(waypoints, i, v)
