@@ -324,9 +324,12 @@ class TLDetector(object):
             light_roi = cv_image[y1:y2, x1:x2]
             light_image = cv2.resize(light_roi, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_CUBIC)
             image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
+            self.light_roi_pub.publish(image_message)
 
             if GEN_TRAINING_DATA:
-                training_img = cv2.resize(light_roi, (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE), interpolation=cv2.INTER_CUBIC)
+                training_img = cv2.resize(light_roi,
+                                          (TRAINING_IMG_SIZE, TRAINING_IMG_SIZE),
+                                          interpolation=cv2.INTER_CUBIC)
                 self.save_training_data(cv_image, training_img, light, y1, y2)
                 self.light_roi_pub.publish(image_message)
 
