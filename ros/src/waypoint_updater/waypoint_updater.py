@@ -22,7 +22,7 @@ current status in `/vehicle/traffic_lights` message. You can use this message to
 as well as to verify your TL classifier.
 '''
 
-LOOKAHEAD_WPS = 100# Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 100  # Number of waypoints we will publish. You can change this number
 
 # Acceleration limit to determine if the car can stop for the light
 # This serves as a quick calculation and does not use JMT.
@@ -30,7 +30,6 @@ LOOKAHEAD_WPS = 100# Number of waypoints we will publish. You can change this nu
 RED_LIGHT_MAX_ACCEL = 9.81
 
 # Target acceleration for velocity changes when situation allows
-# Again this is used for a quick calculation that will feed JMT.
 TARGET_ACCEL = 9.81*0.1
 
 
@@ -42,11 +41,14 @@ class WaypointUpdater(object):
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
         rospy.Subscriber('/current_velocity', TwistStamped, self.velocity_cb)
-        # rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
+        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
 
         # Publishers
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
         self.car_index_pub = rospy.Publisher('car_index', Int32, queue_size=1)
+
+        # Parameters
+        self.speed_limit = self.kmph2mps(rospy.get_param('~velocity'))
 
         self.base_waypoints = None
         self.base_s = [0]
@@ -79,7 +81,6 @@ class WaypointUpdater(object):
             msg.pose.orientation.w)
         euler = tf.transformations.euler_from_quaternion(quaternion)
         self.yaw = euler[2]
-
 
     # Callback method for velocity subscription
     def velocity_cb(self, msg):
@@ -172,9 +173,55 @@ class WaypointUpdater(object):
             closest_index += 1
         return closest_index
 
+    @staticmethod
+    def kmph2mps(velocity_kmph):
+        return (velocity_kmph * 1000.) / (60. * 60.)
+
+    @staticmethod
+    def distance_to_speed(v0, vt, a):
+        t = (vt - v0) / a
+        return 1 / 2 * a * t ** 2 + v0 * t
+
+    @staticmethod
+    def target_accel(v0, vt, d):
+        return (vt ** 2 - v0 ** 2) / (2 * d)
+
+    @staticmethod
+    def target_velocity(d, a, v0):
+        return math.sqrt(2 * a * d + v0 ** 2)
+
+    # Control speed
+    def set_speed(self, next_index, waypoints):
+        s0 = self.base_s[next_index - 1]
+
+        # Do we have a red light?
+        if self.traffic_index > 0:
+            distance_to_light = self.base_s[self.traffic_index] - self.base_s[next_index]
+            stop_accel = self.target_accel(self.vel, 0, distance_to_light)
+            # Should we react?
+            if TARGET_ACCEL <= stop_accel <= RED_LIGHT_MAX_ACCEL:
+                # Set waypoint speeds
+                for i in range(len(waypoints)):
+                    d = self.base_s[next_index+i] - s0
+                    v = self.target_velocity(d, stop_accel, self.vel)
+                    if v < 1.0:
+                        v = 0
+                    self.set_waypoint_velocity(waypoints, i, v)
+
+        # Are we going the speed limit?
+        elif self.vel != self.speed_limit:
+            # Set waypoint speeds
+            for i in range(len(waypoints)):
+                d = self.base_s[next_index+i] - s0
+                v = self.target_velocity(d, TARGET_ACCEL, self.vel)
+                v = min(v, self.speed_limit)
+                self.set_waypoint_velocity(waypoints, i, v)
+
+        return waypoints
+
     # Update waypoints and publish
     def update_waypoints(self):
-        rate = rospy.Rate(2)  # 10hz
+        rate = rospy.Rate(10)  # 10hz
         while not rospy.is_shutdown():
             if self.base_waypoints is not None and self.pose is not None:
                 search_index = 0
@@ -191,11 +238,13 @@ class WaypointUpdater(object):
                 self.car_index_pub.publish(closest_waypoint)
                 next_waypoint = self.find_next_base_waypoint(closest_waypoint)
 
-
-                # Publish final waypoints
+                # Construct final waypoints
                 final_waypoints = []
                 for i in range(next_waypoint, next_waypoint + LOOKAHEAD_WPS):
                     final_waypoints.append(self.base_waypoints[i % self.n_base_waypoints])
+
+                # Adjust the speed of the waypoints based on traffic lights
+                final_waypoints = self.set_speed(next_waypoint, final_waypoints)
 
                 # Construct and publish message
                 lane = Lane()
