@@ -22,7 +22,7 @@ current status in `/vehicle/traffic_lights` message. You can use this message to
 as well as to verify your TL classifier.
 '''
 
-LOOKAHEAD_WPS = 200  # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 50  # Number of waypoints we will publish. You can change this number
 
 # Acceleration limit to determine if the car can stop for the light
 # This serves as a quick calculation and does not use JMT.
@@ -48,7 +48,7 @@ class WaypointUpdater(object):
         self.car_index_pub = rospy.Publisher('car_index', Int32, queue_size=1)
 
         # Parameters
-        self.speed_limit = self.kmph2mps(rospy.get_param('waypoint_loader/velocity'))
+        self.speed_limit = float(self.kmph2mps(rospy.get_param('waypoint_loader/velocity')))
 
         self.base_waypoints = None
         self.base_s = [0]
