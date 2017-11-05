@@ -104,7 +104,7 @@ class WaypointUpdater(object):
     # Callback method for traffic light detection subscription
     def traffic_cb(self, msg):
         # At what future waypoint index is a red light?
-        self.traffic_index = msg.data
+        self.traffic_index = msg.data-5
 
     # Callback method for obstacle detection subscription
     def obstacle_cb(self, msg):

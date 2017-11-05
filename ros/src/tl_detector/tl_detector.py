@@ -92,7 +92,7 @@ class TLDetector(object):
             self.stop_map = []
             for x, y in self.config['stop_line_positions']:
                 stop_point = self.Point(x, y)
-                self.stop_map.append(self.get_closest_waypoint(stop_point)-5)
+                self.stop_map.append(self.get_closest_waypoint(stop_point))
                 rospy.loginfo("Stop Index: {}".format(self.stop_map[-1]))
 
     def car_index_cb(self, msg):
@@ -361,19 +361,17 @@ class TLDetector(object):
                 if self.stop_map[i-1] < self.car_index <= self.stop_map[i]:
                     next_stop_index = self.stop_map[i]
                     traffic_index = i
-            se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
-            dist = math.sqrt(se)
-            # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index,
-            #                                                                 dist,
-            #                                                                 self.lights[traffic_index].state))
-            rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
-                                                                     traffic_index,
-                                                                     next_stop_index,
-                                                                     dist))
+            # se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
+            # dist = math.sqrt(se)
+            # rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
+            #                                                          traffic_index,
+            #                                                          next_stop_index,
+            #                                                          dist))
 
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]
             state = self.get_light_state(light)
+            rospy.loginfo("Light {} state: {}".format(traffic_index, state))
             return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
 
