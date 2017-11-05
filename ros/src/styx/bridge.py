@@ -6,9 +6,9 @@ from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
 from dbw_mkz_msgs.msg import SteeringReport, ThrottleCmd, BrakeCmd, SteeringCmd
 from std_msgs.msg import Float32 as Float
 from std_msgs.msg import Bool
-from sensor_msgs.msg import PointCloud2
+# from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import Image
-import sensor_msgs.point_cloud2 as pcl2
+# import sensor_msgs.point_cloud2 as pcl2
 from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -110,12 +110,12 @@ class Bridge(object):
         self.prev_time = rospy.get_time()
         return angular_vel
 
-    def create_point_cloud_message(self, pts):
-        header = Header()
-        header.stamp = rospy.Time.now()
-        header.frame_id = '/world'
-        cloud_message = pcl2.create_cloud_xyz32(header, pts)
-        return cloud_message
+    # def create_point_cloud_message(self, pts):
+    #     header = Header()
+    #     header.stamp = rospy.Time.now()
+    #     header.frame_id = '/world'
+    #     cloud_message = pcl2.create_cloud_xyz32(header, pts)
+    #     return cloud_message
 
     def broadcast_transform(self, name, position, orientation):
         br = tf.TransformBroadcaster()
@@ -144,18 +144,18 @@ class Bridge(object):
         self.publishers['throttle_report'].publish(self.create_float(throttle))
         self.publishers['brake_report'].publish(self.create_float(brake))
 
-    def publish_obstacles(self, data):
-        for obs in data['obstacles']:
-            pose = self.create_pose(obs[0], obs[1], obs[2])
-            self.publishers['obstacle'].publish(pose)
-        header = Header()
-        header.stamp = rospy.Time.now()
-        header.frame_id = '/world'
-        cloud = pcl2.create_cloud_xyz32(header, data['obstacles'])
-        self.publishers['obstacle_points'].publish(cloud)
+    # def publish_obstacles(self, data):
+    #     for obs in data['obstacles']:
+    #         pose = self.create_pose(obs[0], obs[1], obs[2])
+    #         self.publishers['obstacle'].publish(pose)
+    #     header = Header()
+    #     header.stamp = rospy.Time.now()
+    #     header.frame_id = '/world'
+    #     cloud = pcl2.create_cloud_xyz32(header, data['obstacles'])
+    #     self.publishers['obstacle_points'].publish(cloud)
 
-    def publish_lidar(self, data):
-        self.publishers['lidar'].publish(self.create_point_cloud_message(zip(data['lidar_x'], data['lidar_y'], data['lidar_z'])))
+    # def publish_lidar(self, data):
+    #     self.publishers['lidar'].publish(self.create_point_cloud_message(zip(data['lidar_x'], data['lidar_y'], data['lidar_z'])))
 
     def publish_traffic(self, data):
         x, y, z = data['light_pos_x'], data['light_pos_y'], data['light_pos_z'],
