@@ -6,9 +6,9 @@ from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
 from dbw_mkz_msgs.msg import SteeringReport, ThrottleCmd, BrakeCmd, SteeringCmd
 from std_msgs.msg import Float32 as Float
 from std_msgs.msg import Bool
-# from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import Image
-# import sensor_msgs.point_cloud2 as pcl2
+import sensor_msgs.point_cloud2 as pcl2
 from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
 
