@@ -24,7 +24,7 @@ TYPE = {
     'bool': Bool,
     'float': Float,
     'pose': PoseStamped,
-    'pcl': PointCloud2,
+    # 'pcl': PointCloud2,
     'twist': TwistStamped,
     'steer': SteeringReport,
     'trafficlights': TrafficLightArray,
