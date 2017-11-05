@@ -204,8 +204,6 @@ class WaypointUpdater(object):
         # Do we have a red light?
         if self.traffic_index > 0:
             distance_to_light = self.base_s[self.traffic_index] - self.base_s[next_index]
-            if distance_to_light < 0.1:
-                stop_accel = RED_LIGHT_MAX_ACCEL
             stop_accel = self.target_accel(self.vel, 0, distance_to_light)
             # Should we react?
             if RED_LIGHT_MAX_ACCEL < stop_accel <= -TARGET_ACCEL:
@@ -216,8 +214,6 @@ class WaypointUpdater(object):
                         v = 0
                     else:
                         v = self.target_velocity(d, stop_accel, self.vel)
-                    if v < 1.0:
-                        v = 0
                     self.set_waypoint_velocity(waypoints, i, v)
 
         # Are we going the speed limit?
@@ -233,7 +229,7 @@ class WaypointUpdater(object):
 
     # Update waypoints and publish
     def update_waypoints(self):
-        rate = rospy.Rate(1)  # 10hz
+        rate = rospy.Rate(10)  # 10hz
         while not rospy.is_shutdown():
             if self.base_waypoints is not None and self.pose is not None:
                 search_index = 0
