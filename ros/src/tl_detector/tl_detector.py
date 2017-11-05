@@ -21,7 +21,7 @@ LIGHT_WIDTH = 3
 # TRAINING_FOLDER = '/home/josh/Documents/version-control/CarND-Capstone/tl_data'
 # Virtual
 TRAINING_FOLDER = '/media/sf_tl_data'
-IMG_SIZE = 24
+IMG_SIZE = 32
 TRAINING_IMG_SIZE = 100
 GEN_TRAINING_DATA = False
 
@@ -334,8 +334,6 @@ class TLDetector(object):
                 self.light_roi_pub.publish(image_message)
 
             #Get classification
-            pixel = light_roi[0][0][0]
-            rospy.loginfo("{} - {}".format(pixel, type(pixel)))
             light_state = self.light_classifier.get_classification(light_image)
             self.light_state_pub.publish(light_state)
 

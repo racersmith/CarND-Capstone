@@ -10,7 +10,7 @@ class TLClassifier(object):
         self.model = load_model('light_classification/trained_model.h5')
         print(self.model.summary())
         # Test model
-        dummy_image = np.zeros((24,24,3))
+        dummy_image = np.zeros((32,32,3))
         print(self.model.predict(np.array([dummy_image])))
         print(self.get_classification(dummy_image))
 
