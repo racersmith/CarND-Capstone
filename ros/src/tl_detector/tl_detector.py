@@ -335,7 +335,7 @@ class TLDetector(object):
 
             #Get classification
             pixel = light_roi[0][0][0]
-            rospy.loginfo("{} {} {} - {}".format(*pixel, type(pixel[0])))
+            rospy.loginfo("{} - {}".format(pixel[0], type(pixel[0])))
             light_state = self.light_classifier.get_classification(light_image)
             self.light_state_pub.publish(light_state)
 
