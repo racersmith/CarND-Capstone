@@ -30,7 +30,7 @@ LOOKAHEAD_WPS = 100  # Number of waypoints we will publish. You can change this 
 RED_LIGHT_MAX_ACCEL = -9.81
 
 # Target acceleration for velocity changes when situation allows
-TARGET_ACCEL = 9.81*0.5
+TARGET_ACCEL = 9.81*0.15
 
 
 class WaypointUpdater(object):
