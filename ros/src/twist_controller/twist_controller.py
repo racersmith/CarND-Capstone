@@ -25,11 +25,11 @@ class Controller(object):
         # F = m*a
         # T = F*r
         # T = m*a*r
-        maximum_braking_torque = -(vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
+        self.maximum_braking_torque = -(vehicle_mass+fuel_capacity*GAS_DENSITY)*decel_limit*wheel_radius
 
         # Initialize PID controllers for throttle, brake and steering
         self.throttle_controller = PID(kp=0.2, kd=0.1, ki=0.0, mn=0.0, mx=1.0)
-        self.brake_controller = PID(kp=500.0, kd=10.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
+        self.brake_controller = PID(kp=500.0, kd=10.0, ki=0.0, mn=brake_deadband, mx=self.maximum_braking_torque)
         self.steering_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
         # self.steering_pid = PID(kp=0.1, kd=0.0, ki=0.0, mn=-max_steer_angle, mx=max_steer_angle)
 
@@ -47,11 +47,17 @@ class Controller(object):
         current_time = rospy.get_time()
         step_time = current_time - self.last_time
         self.last_time = current_time
-        throttle_cmd = self.throttle_controller.step(linear_error, step_time)
-        brake_cmd = self.brake_controller.step(-linear_error, step_time)
-        if brake_cmd <= self.brake_deadband:
-            # no need to ride the brakes.
-            brake_cmd = 0.0
+
+        if linear_current > 0.1 and linear_target > 0.1:
+            throttle_cmd = self.throttle_controller.step(linear_error, step_time)
+            brake_cmd = self.brake_controller.step(-linear_error, step_time)
+            if brake_cmd <= self.brake_deadband:
+                # no need to ride the brakes.
+                brake_cmd = 0.0
+        else:
+            # Hold brakes at stop light
+            throttle_cmd = 0.0
+            brake_cmd = 0.2*self.maximum_braking_torque
 
         steering_cmd = self.steering_controller.get_steering(linear_target, angular_target, linear_current)
 
