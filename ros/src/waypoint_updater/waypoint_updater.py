@@ -213,6 +213,7 @@ class WaypointUpdater(object):
             else:
                 distance_to_light = self.base_s[self.traffic_index] - self.base_s[next_index]
             stop_accel = self.target_accel(self.vel, 0, distance_to_light)
+
             # Should we react?
             if RED_LIGHT_MAX_ACCEL < stop_accel <= -TARGET_ACCEL:
                 # Set waypoint speeds
@@ -228,9 +229,6 @@ class WaypointUpdater(object):
         elif self.vel != self.speed_limit:
             # Set waypoint speeds
             for i in range(len(waypoints)):
-                # d = self.base_s[next_index+i] - s0
-                # v = self.target_velocity(d, TARGET_ACCEL, self.vel)
-                # v = min(v, self.speed_limit)
                 v = self.speed_limit
                 self.set_waypoint_velocity(waypoints, i, v)
 
@@ -270,7 +268,6 @@ class WaypointUpdater(object):
                 lane.waypoints = final_waypoints
                 self.final_waypoints_pub.publish(lane)
                 self.last_waypoint_index = next_waypoint
-
             rate.sleep()
 
 
