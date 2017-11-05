@@ -357,9 +357,9 @@ class TLDetector(object):
             # find the closest visible traffic light (if one exists)
             next_stop_index = self.stop_map[0]
             traffic_index = 0
-            for i, stop_index in enumerate(self.stop_map):
-                if stop_index >= self.car_index > next_stop_index:
-                    next_stop_index = stop_index
+            for i in range(1, len(self.stop_map)):
+                if self.stop_map[i-1] < self.car_index <= self.stop_map[i]:
+                    next_stop_index = self.stop_map[i]
                     traffic_index = i
             # se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
             # dist = math.sqrt(se)
