@@ -334,6 +334,8 @@ class TLDetector(object):
                 self.light_roi_pub.publish(image_message)
 
             #Get classification
+            pixel = light_roi[0][0][0]
+            rospy.loginfo("{} {} {} - {}".format(*pixel, type(pixel[0])))
             light_state = self.light_classifier.get_classification(light_image)
             self.light_state_pub.publish(light_state)
 
@@ -371,7 +373,7 @@ class TLDetector(object):
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]
             state = self.get_light_state(light)
-            rospy.loginfo("Light {} state: {}".format(traffic_index, state))
+            # rospy.loginfo("Light {} state: {}".format(traffic_index, state))
             return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
 
