@@ -304,7 +304,7 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        if(not self.has_image):
+        if not self.has_image:
             self.prev_light_loc = None
             return False
 
@@ -322,7 +322,7 @@ class TLDetector(object):
             # rospy.loginfo("Image Position: {}, {}".format(x, y))
 
             light_roi = cv_image[y1:y2, x1:x2]
-            light_image = cv2.resize(light_roi, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_CUBIC)
+            light_image = cv2.resize(light_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
             image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
             self.light_roi_pub.publish(image_message)
 
@@ -361,15 +361,15 @@ class TLDetector(object):
                 if self.stop_map[i-1] < self.car_index <= self.stop_map[i]:
                     next_stop_index = self.stop_map[i]
                     traffic_index = i
-            # se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
-            # dist = math.sqrt(se)
+            se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
+            dist = math.sqrt(se)
             # rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(traffic_index,
             #                                                                 dist,
             #                                                                 self.lights[traffic_index].state))
-            # rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
-            #                                                          traffic_index,
-            #                                                          next_stop_index,
-            #                                                          dist))
+            rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
+                                                                     traffic_index,
+                                                                     next_stop_index,
+                                                                     dist))
 
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]

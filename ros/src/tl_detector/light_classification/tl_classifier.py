@@ -14,8 +14,6 @@ class TLClassifier(object):
         print(self.model.predict(np.array([dummy_image])))
         print(self.get_classification(dummy_image))
 
-        # self.model._make_predict_function()
-
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
 
