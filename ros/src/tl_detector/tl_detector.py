@@ -47,10 +47,11 @@ class TLDetector(object):
         self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
-        self.n_red = len(os.listdir(TRAINING_FOLDER+"/red"))
-        self.n_yellow = len(os.listdir(TRAINING_FOLDER+"/yellow"))
-        self.n_green = len(os.listdir(TRAINING_FOLDER+"/green"))
-        self.n_other = len(os.listdir(TRAINING_FOLDER+"/other"))
+        if GEN_TRAINING_DATA:
+            self.n_red = len(os.listdir(TRAINING_FOLDER+"/red"))
+            self.n_yellow = len(os.listdir(TRAINING_FOLDER+"/yellow"))
+            self.n_green = len(os.listdir(TRAINING_FOLDER+"/green"))
+            self.n_other = len(os.listdir(TRAINING_FOLDER+"/other"))
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -103,13 +104,6 @@ class TLDetector(object):
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
-        # Find next light
-        # Determine distance
-        # Set stop waypoint
-        # for i, light in enumerate(msg.lights):
-        #     dist = math.sqrt(self.squared_error_2d(self.pose.pose.position, light.pose.pose.position))
-        #     state = light.state
-        #     rospy.loginfo("Traffic Light {}: dist={:4.2f}, state={}".format(i, dist, state))
 
     def image_cb(self, msg):
         """Identifies red lights in the incoming camera image and publishes the index
@@ -122,7 +116,6 @@ class TLDetector(object):
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
-        # rospy.loginfo("light WP: {}, Light state: {}, Count: {}".format(light_wp, state, self.state_count))
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -176,34 +169,14 @@ class TLDetector(object):
         return (a.x - b.x)**2 + (a.y - b.y)**2
 
     def project_with_fov(self, d, x, y):
-        # Point in space to map to image plane
-        # This point should be relative to the camera
-        # d = point.pose.position.x
-        # x = point.pose.position.y
-        # y = point.pose.position.z - 1
-
         # Camera characteristics
         fov_x = self.config['camera_info']['focal_length_x']
         fov_y = self.config['camera_info']['focal_length_y']
         image_width = self.config['camera_info']['image_width']
         image_height = self.config['camera_info']['image_height']
 
-        # This the half height/width of the image when projected
-        # to the depth of the point
-        # normalizer_x = d * math.tan(fov_x/2.0)
-        # normalizer_y = d * math.tan(fov_y/2.0)
-
-        # Position in image using upper left corner as origin
-        # img_x = image_width/2.0 + image_width/2.0 * x/normalizer_x
-        # img_y = image_height/2.0 + image_height/2.0 * y/normalizer_y
-
-        # img_y = math.atan(y/d)/fov_y*image_height
         img_x = 0.5*image_width - 2574*x/d
         img_y = image_height - 2740*y/d
-
-        # Position in image using image center as origin
-        # img_x = image_width * x / normalizer_x
-        # img_y = image_height * y / normalizer_y
 
         img_x = self.clamp(img_x, 0, image_width)
         img_y = self.clamp(img_y, 0, image_height)
@@ -228,53 +201,17 @@ class TLDetector(object):
         # rot = None
         base_light = None
 
-        # base_light = self.listener.transformPose("base_link", light.pose)
-
         try:
-            # now = rospy.Time.now()
-            # self.listener.waitForTransform("/base_link",
-            #       "/world", now, rospy.Duration(1.0))
-            # (trans, rot) = self.listener.lookupTransform("/base_link",
-            #       "/world", now)
-
-            # Transform pose of light relative to car
-            # base_light = PoseStamped()
-
             now = rospy.Time.now()
             self.listener.waitForTransform("/base_link",
                   light.header.frame_id, now, rospy.Duration(1.0))
             base_light = self.listener.transformPose("base_link", light.pose)
-            # rospy.loginfo("Light relative to car ({:4.2f}, {:4.2f}, {:4.2f})".format(base_light.pose.position.x,
-            #                                                                          base_light.pose.position.y,
-            #                                                                          base_light.pose.position.z))
-            # rospy.loginfo(base_light)
-            # rospy.loginfo(euler)
 
         except (tf.Exception, tf.LookupException, tf.ConnectivityException):
             rospy.logerr("Failed to find camera to map transform")
             return None
 
-        #TODO Use transform and rotation to calculate 2D position of light in image
-
-
-        # if trans is not None:
-        #     obj_points = np.float32([[obj_pos.x, obj_pos.y, obj_pos.z]]).reshape(-1, 3)
-        #     # euler = tf.transformations.euler_from_quaternion(rot)
-        #     camera_matrix = np.array([[fx, 0, image_width/2],
-        #                               [0, fy, image_height/2],
-        #                               [0, 0, 1]])
-        #     dist_coef = np.zeros(4)
-        #
-        #     # Map between car coord to cv2
-        #     # rospy.loginfo(trans)
-        #     # rospy.loginfo(euler)
-        #     # trans = np.array([trans[1], trans[2], trans[0]])
-        #     # euler = np.array([euler[1], euler[2], euler[0]])
-        #
-        #     img_points, _ = cv2.projectPoints(obj_points, euler, trans, camera_matrix, dist_coef)
-        #     x = img_points[0][0][0]
-        #     y = img_points[0][0][1]
-
+        # Find bounding box of traffic light in image
         if base_light is not None:
             # Simulator uses FOV
             if fx < 100:
@@ -283,8 +220,6 @@ class TLDetector(object):
                 x = base_light.pose.position.y + 0.5
                 y = base_light.pose.position.z - 1.75
 
-                cx, cy = self.project_with_fov(d, x, y)
-                # rospy.loginfo("Light Center Point: ({}, {})".format(cx, cy))
                 ux, uy = self.project_with_fov(d, x + 0.5*LIGHT_WIDTH, y + 0.5*LIGHT_HEIGHT)
                 lx, ly = self.project_with_fov(d, x - 0.5*LIGHT_WIDTH, y - 0.5*LIGHT_HEIGHT)
 
@@ -310,8 +245,6 @@ class TLDetector(object):
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "rgb8")
 
-        obj_pos = light.pose.pose.position
-
         # use light location to zoom in on traffic light in image
         bbox = self.project_to_image_plane(light)
         if bbox is None:
@@ -319,12 +252,8 @@ class TLDetector(object):
 
         x1, y1, x2, y2 = bbox
         if x1 is not None and abs(y2-y1) > 70 and abs(x2-x1) > 70:
-            # rospy.loginfo("Image Position: {}, {}".format(x, y))
-
             light_roi = cv_image[y1:y2, x1:x2]
             light_image = cv2.resize(light_roi, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_CUBIC)
-            # image_message = self.bridge.cv2_to_imgmsg(light_image, encoding="bgr8")
-            # self.light_roi_pub.publish(image_message)
 
             if GEN_TRAINING_DATA:
                 training_img = cv2.resize(light_roi,
@@ -362,17 +291,10 @@ class TLDetector(object):
                 if self.stop_map[i-1] < self.car_index <= self.stop_map[i]:
                     next_stop_index = self.stop_map[i]
                     traffic_index = i
-            # se = self.squared_error_2d(self.lights[traffic_index].pose.pose.position, self.pose.pose.position)
-            # dist = math.sqrt(se)
-            # rospy.loginfo("Current: {}, Light {} @ {} in {}m".format(self.car_index,
-            #                                                          traffic_index,
-            #                                                          next_stop_index,
-            #                                                          dist))
 
         if self.lights is not None and traffic_index is not None:
             light = self.lights[traffic_index]
             state = self.get_light_state(light)
-            # rospy.loginfo("Light {} state: {}".format(traffic_index, state))
             return next_stop_index, state
         return next_stop_index, TrafficLight.UNKNOWN
 
