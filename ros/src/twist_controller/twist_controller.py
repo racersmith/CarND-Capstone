@@ -29,7 +29,7 @@ class Controller(object):
 
         # Initialize PID controllers for throttle, brake and steering
         self.throttle_controller = PID(kp=0.2, kd=0.1, ki=0.0, mn=0.0, mx=1.0)
-        self.brake_controller = PID(kp=100.0, kd=0.1, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
+        self.brake_controller = PID(kp=500.0, kd=10.0, ki=0.0, mn=brake_deadband, mx=maximum_braking_torque)
         self.steering_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
         # self.steering_pid = PID(kp=0.1, kd=0.0, ki=0.0, mn=-max_steer_angle, mx=max_steer_angle)
 
