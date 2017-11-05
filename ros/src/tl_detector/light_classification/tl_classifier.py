@@ -24,8 +24,8 @@ class TLClassifier(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        pred = self.model.predict(np.array([image]))
-        print(pred)
+        pred = self.model.predict(np.array([image]))[0]
+        print(pred, image[0][0][0])
         light_state = np.argmax(pred)
 
         if light_state == 0:
