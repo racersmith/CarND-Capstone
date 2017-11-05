@@ -22,8 +22,8 @@ LIGHT_WIDTH = 3
 # Virtual
 TRAINING_FOLDER = '/media/sf_tl_data'
 IMG_SIZE = 32
-TRAINING_IMG_SIZE = 100
-GEN_TRAINING_DATA = False
+TRAINING_IMG_SIZE = 32
+GEN_TRAINING_DATA = True
 
 class TLDetector(object):
     def __init__(self):
