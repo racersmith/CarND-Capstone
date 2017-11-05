@@ -220,9 +220,10 @@ class WaypointUpdater(object):
         elif self.vel != self.speed_limit:
             # Set waypoint speeds
             for i in range(len(waypoints)):
-                d = self.base_s[next_index+i] - s0
-                v = self.target_velocity(d, TARGET_ACCEL, self.vel)
-                v = min(v, self.speed_limit)
+                # d = self.base_s[next_index+i] - s0
+                # v = self.target_velocity(d, TARGET_ACCEL, self.vel)
+                # v = min(v, self.speed_limit)
+                v = self.speed_limit
                 self.set_waypoint_velocity(waypoints, i, v)
 
         return waypoints
