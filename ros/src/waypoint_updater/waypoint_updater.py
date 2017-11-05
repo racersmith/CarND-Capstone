@@ -30,7 +30,7 @@ LOOKAHEAD_WPS = 100  # Number of waypoints we will publish. You can change this 
 RED_LIGHT_MAX_ACCEL = -9.81
 
 # Target acceleration for velocity changes when situation allows
-TARGET_ACCEL = 9.81*0.15
+TARGET_ACCEL = 9.81*0.05
 
 
 class WaypointUpdater(object):
@@ -195,7 +195,11 @@ class WaypointUpdater(object):
 
     @staticmethod
     def target_velocity(d, a, v0):
-        return math.sqrt(2 * a * d + v0 ** 2)
+        x = 2 * a * d + v0 ** 2
+        if x < 0:
+            return 0
+        else:
+            return math.sqrt(x)
 
     # Control speed
     def set_speed(self, next_index, waypoints):
@@ -203,7 +207,11 @@ class WaypointUpdater(object):
 
         # Do we have a red light?
         if self.traffic_index > 0:
-            distance_to_light = self.base_s[self.traffic_index] - self.base_s[next_index]
+            if next_index > len(self.base_s):
+                next_index = next_index%len(self.base_s)
+                distance_to_light = self.base_s[self.traffic_index] - self.base_s[next_index] + self.base_s[-1]
+            else:
+                distance_to_light = self.base_s[self.traffic_index] - self.base_s[next_index]
             stop_accel = self.target_accel(self.vel, 0, distance_to_light)
             # Should we react?
             if RED_LIGHT_MAX_ACCEL < stop_accel <= -TARGET_ACCEL:
